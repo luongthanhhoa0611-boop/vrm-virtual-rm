@@ -1,0 +1,2994 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Trợ lý số KHDN — Thiết kế giao diện v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0E2A47;
+    --navy-800:#163A5E;
+    --navy-700:#1F4A78;
+    --gold-500:#C89B3C;
+    --gold-600:#B08428;
+    --gold-100:#F3E7CB;
+    --green-600:#1C7C54;
+    --green-100:#E3F3EA;
+    --red-500:#C4443B;
+    --red-100:#FBEAE8;
+    --blue-600:#2A5FAE;
+    --blue-100:#E7EEF9;
+    --bg:#F5F6F8;
+    --surface:#FFFFFF;
+    --text-900:#14213D;
+    --text-600:#5B6B82;
+    --text-400:#94A2B8;
+    --border:#E4E8EE;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:linear-gradient(180deg,#EDEFF3 0%,#DEE2E9 100%);
+    font-family:'Inter',sans-serif;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px 60px;
+    min-height:100vh;
+    color:var(--text-900);
+  }
+  .stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+  .stage-label{
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-600);
+  }
+
+  /* ---- view switch ---- */
+  .view-switch{
+    display:flex;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:4px;
+    gap:4px;
+    box-shadow:0 4px 14px rgba(14,42,71,.08);
+  }
+  .view-btn{
+    border:none;
+    background:transparent;
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-size:12.5px;
+    font-weight:700;
+    padding:9px 16px;
+    border-radius:20px;
+    cursor:pointer;
+    color:var(--text-600);
+    display:flex;
+    align-items:center;
+    gap:7px;
+    transition:.2s;
+    white-space:nowrap;
+  }
+  .view-btn svg{opacity:.7;transition:.2s;}
+  .view-btn.active{
+    background:var(--navy-900);
+    color:#fff;
+  }
+  .view-btn.active svg{opacity:1;}
+
+  /* ---- phone frame ---- */
+  .phone{
+    width:375px;
+    height:812px;
+    background:#000;
+    border-radius:46px;
+    padding:12px;
+    box-shadow:0 30px 60px -20px rgba(14,42,71,.45), 0 8px 20px -6px rgba(14,42,71,.3);
+    position:relative;
+  }
+  .screen{
+    width:100%;
+    height:100%;
+    background:var(--surface);
+    border-radius:36px;
+    overflow:hidden;
+    display:none;
+    flex-direction:column;
+    position:relative;
+  }
+  .screen.active{
+    display:flex;
+    animation:screenFade .32s ease;
+  }
+  @keyframes screenFade{
+    from{opacity:0; transform:scale(.985);}
+    to{opacity:1; transform:scale(1);}
+  }
+
+  /* ---- status bar ---- */
+  .statusbar{
+    height:47px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 26px;
+    background:var(--navy-900);
+    color:#fff;
+    font-size:13px;
+    font-weight:600;
+  }
+  .statusbar .icons{display:flex;align-items:center;gap:5px;}
+  .notch{
+    position:absolute;
+    top:0; left:50%; transform:translateX(-50%);
+    width:120px; height:26px;
+    background:#000;
+    border-radius:0 0 16px 16px;
+    z-index:30;
+  }
+
+  /* ---- app header ---- */
+  .app-header{
+    background:linear-gradient(135deg,var(--navy-900) 0%,var(--navy-700) 100%);
+    color:#fff;
+    padding:14px 18px 18px;
+    flex-shrink:0;
+    position:relative;
+  }
+  .app-header-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .back-btn{
+    width:30px;height:30px;
+    display:flex;align-items:center;justify-content:center;
+    opacity:.85;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .back-btn:hover{opacity:1;}
+  .back-btn:active{transform:scale(.9);}
+  .header-title{
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:.02em;
+  }
+  .header-actions{display:flex;gap:14px;opacity:.9;}
+
+  .rm-identity{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .rm-avatar{
+    width:46px;height:46px;
+    border-radius:14px;
+    background:linear-gradient(135deg,var(--gold-500),var(--gold-600));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-weight:700;
+    font-size:17px;
+    color:var(--navy-900);
+    flex-shrink:0;
+    position:relative;
+  }
+  .rm-avatar::after{
+    content:'';
+    position:absolute;
+    bottom:-2px;right:-2px;
+    width:12px;height:12px;
+    background:#3DDC84;
+    border:2.5px solid var(--navy-800);
+    border-radius:50%;
+  }
+  .rm-name{
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    line-height:1.25;
+  }
+  .rm-status{
+    font-size:12px;
+    color:#BFD3E8;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    margin-top:2px;
+  }
+  .rm-tag{
+    margin-left:auto;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.22);
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:5px;
+  }
+
+  /* ---- company selector (RM view) ---- */
+  .company-selector{
+    margin-top:12px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:12px;
+    padding:9px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+  }
+  .company-selector .cs-left{display:flex;align-items:center;gap:9px;}
+  .company-selector .cs-logo{
+    width:28px;height:28px;border-radius:8px;
+    background:var(--gold-100);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;color:var(--navy-900);
+    font-family:'Be Vietnam Pro',sans-serif;
+  }
+  .company-selector .cs-name{font-size:12.5px;font-weight:700;}
+  .company-selector .cs-sub{font-size:10.5px;color:#BFD3E8;margin-top:1px;}
+
+  /* ---- chat area ---- */
+  .chat{
+    flex:1;
+    overflow-y:auto;
+    padding:16px 14px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    background:var(--bg);
+    scroll-behavior:smooth;
+  }
+  .chat::-webkit-scrollbar{width:0;}
+
+  .bubble-row{display:flex;gap:8px;max-width:100%;}
+  .bubble-row.user{justify-content:flex-end;}
+  .bubble-row.assistant{justify-content:flex-start;}
+
+  .mini-avatar{
+    width:26px;height:26px;border-radius:8px;
+    background:linear-gradient(135deg,var(--gold-500),var(--gold-600));
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:var(--navy-900);
+    font-family:'Be Vietnam Pro',sans-serif;
+    margin-top:2px;
+  }
+
+  .bubble{
+    padding:11px 14px;
+    border-radius:var(--radius-md);
+    font-size:13.5px;
+    line-height:1.5;
+    max-width:78%;
+  }
+  .bubble.assistant{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-top-left-radius:4px;
+    color:var(--text-900);
+  }
+  .bubble.user{
+    background:var(--navy-900);
+    color:#fff;
+    border-top-right-radius:4px;
+  }
+  .timestamp{
+    font-size:10px;
+    color:var(--text-400);
+    margin-top:4px;
+    padding:0 4px;
+  }
+  .bubble-row.user .timestamp{text-align:right;}
+
+  /* ---- card / bubble entrance animation ---- */
+  .card-enter{
+    animation:cardEnter .38s cubic-bezier(.2,.8,.25,1);
+  }
+  @keyframes cardEnter{
+    from{opacity:0; transform:translateY(10px) scale(.98);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+
+  /* ---- suggestion chips ---- */
+  .chips{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:2px 2px 6px;
+    scrollbar-width:none;
+    flex-wrap:wrap;
+  }
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex-shrink:0;
+    background:var(--surface);
+    border:1px solid var(--border);
+    color:var(--navy-800);
+    font-size:12.5px;
+    font-weight:600;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    transition:.15s;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+  .chip:hover{background:var(--gold-100);border-color:var(--gold-500);}
+  .chip.active{background:var(--navy-900);color:#fff;border-color:var(--navy-900);}
+
+  /* ---- structured response cards ---- */
+  .data-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    border-top-left-radius:4px;
+    overflow:hidden;
+    max-width:88%;
+    box-shadow:0 2px 8px rgba(14,42,71,.06);
+  }
+  .data-card-head{
+    padding:11px 14px 9px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .data-card-head .label{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--text-600);
+  }
+  .head-badge{
+    font-size:10px;
+    font-weight:700;
+    padding:3px 8px;
+    border-radius:20px;
+    background:var(--blue-100);
+    color:var(--blue-600);
+  }
+  .data-card-body{padding:12px 14px 14px;}
+
+  /* balance card */
+  .acct-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px dashed var(--border);
+  }
+  .acct-row:last-child{border-bottom:none;padding-bottom:0;}
+  .acct-name{font-size:12.5px;font-weight:600;color:var(--text-900);}
+  .acct-no{font-size:10.5px;color:var(--text-400);margin-top:1px;}
+  .acct-amount{font-size:13.5px;font-weight:700;color:var(--navy-900);font-family:'Be Vietnam Pro',sans-serif;}
+  .acct-total{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1.5px solid var(--navy-900);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .acct-total .lbl{font-size:12px;font-weight:600;color:var(--text-600);}
+  .acct-total .val{font-size:16px;font-weight:800;color:var(--navy-900);font-family:'Be Vietnam Pro',sans-serif;}
+
+  /* approval card */
+  .apv-item{
+    padding:10px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .apv-item:last-child{border-bottom:none;padding-bottom:0;}
+  .apv-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+  .apv-title{font-size:12.5px;font-weight:600;}
+  .apv-sub{font-size:11px;color:var(--text-600);margin-top:2px;}
+  .apv-amount{font-size:13px;font-weight:700;color:var(--navy-900);font-family:'Be Vietnam Pro',sans-serif;text-align:right;}
+  .apv-badge{
+    display:inline-block;
+    font-size:10px;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:20px;
+    background:var(--gold-100);
+    color:var(--gold-600);
+    margin-top:4px;
+  }
+  .apv-actions{display:flex;gap:8px;margin-top:8px;}
+  .btn-mini{
+    flex:1;
+    padding:7px 0;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:700;
+    text-align:center;
+    border:none;
+    cursor:pointer;
+  }
+  .btn-approve{background:var(--green-600);color:#fff;}
+  .btn-reject{background:var(--red-100);color:var(--red-500);}
+  .apv-result{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin-top:8px;
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:11.5px;
+    font-weight:700;
+  }
+  .apv-result.done{background:var(--green-100);color:var(--green-600);}
+  .apv-result.rejected{background:var(--red-100);color:var(--red-500);}
+
+  /* forecast card */
+  .fc-summary{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .fc-summary .item .val{font-size:15px;font-weight:800;font-family:'Be Vietnam Pro',sans-serif;color:var(--navy-900);}
+  .fc-summary .item .lbl{font-size:10.5px;color:var(--text-600);margin-top:1px;}
+  .fc-summary .item.warn .val{color:var(--red-500);}
+  .fc-chart{
+    display:flex;
+    align-items:flex-end;
+    gap:6px;
+    height:70px;
+    padding:0 2px;
+  }
+  .fc-bar{
+    flex:1;
+    background:linear-gradient(180deg,var(--gold-500),var(--gold-600));
+    border-radius:4px 4px 0 0;
+    position:relative;
+  }
+  .fc-bar.low{background:linear-gradient(180deg,#E7A9A3,var(--red-500));}
+  .fc-labels{
+    display:flex;
+    gap:6px;
+    margin-top:6px;
+  }
+  .fc-labels span{flex:1;text-align:center;font-size:9.5px;color:var(--text-400);}
+  .fc-note{
+    margin-top:10px;
+    background:var(--red-100);
+    color:#8C2E27;
+    font-size:11.5px;
+    padding:8px 10px;
+    border-radius:8px;
+    line-height:1.4;
+  }
+
+  /* RAG card */
+  .rag-item{
+    padding:8px 0;
+    border-bottom:1px dashed var(--border);
+  }
+  .rag-item:last-child{border-bottom:none;}
+  .rag-q{font-size:12px;font-weight:600;color:var(--text-900);}
+  .rag-a{font-size:12.5px;font-weight:700;color:var(--navy-900);margin-top:3px;font-family:'Be Vietnam Pro',sans-serif;}
+  .rag-source{
+    margin-top:10px;
+    display:flex;
+    align-items:flex-start;
+    gap:7px;
+    background:var(--blue-100);
+    color:var(--blue-600);
+    font-size:10.5px;
+    line-height:1.45;
+    padding:8px 9px;
+    border-radius:8px;
+  }
+  .rag-source svg{flex-shrink:0;margin-top:1px;}
+
+  /* RCM card */
+  .rcm-insight{
+    font-size:12px;
+    line-height:1.5;
+    color:var(--text-600);
+    background:var(--bg);
+    padding:9px 10px;
+    border-radius:8px;
+    margin-bottom:10px;
+  }
+  .rcm-product{
+    display:flex;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px dashed var(--border);
+  }
+  .rcm-product:last-child{border-bottom:none;padding-bottom:0;}
+  .rcm-icon{
+    width:32px;height:32px;
+    border-radius:9px;
+    background:var(--gold-100);
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .rcm-name{font-size:12.5px;font-weight:700;color:var(--text-900);}
+  .rcm-desc{font-size:11px;color:var(--text-600);margin-top:2px;line-height:1.4;}
+
+  .card-cta{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:10px;
+    background:var(--navy-900);
+    color:#fff;
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  .typing{
+    display:flex;
+    gap:4px;
+    padding:12px 14px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    border-top-left-radius:4px;
+    width:52px;
+  }
+  .typing span{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--text-400);
+    animation:blink 1.2s infinite;
+  }
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.25;}40%{opacity:1;}}
+
+  /* ---- input bar ---- */
+  .input-bar{
+    flex-shrink:0;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+  .icon-btn{
+    width:34px;height:34px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text-600);
+    flex-shrink:0;
+    border:none;
+    background:transparent;
+    cursor:pointer;
+  }
+  .text-input{
+    flex:1;
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:9px 14px;
+    font-size:13px;
+    color:var(--text-900);
+    font-family:'Inter',sans-serif;
+    outline:none;
+  }
+  .text-input::placeholder{color:var(--text-400);}
+  .text-input:focus{border-color:var(--gold-500);background:var(--surface);}
+  .send-btn{
+    width:36px;height:36px;
+    border-radius:50%;
+    background:var(--navy-900);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    cursor:pointer;
+    border:none;
+    transition:.15s;
+  }
+  .send-btn:active{transform:scale(.92);}
+
+  /* ---- bottom nav ---- */
+  .bottom-nav{
+    flex-shrink:0;
+    display:flex;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    padding:8px 4px 22px;
+  }
+  .nav-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    color:var(--text-400);
+    font-size:10px;
+    font-weight:600;
+  }
+  .nav-item.active{color:var(--navy-900);}
+  .nav-item.active .nav-icon-wrap{
+    background:var(--gold-100);
+  }
+  .nav-icon-wrap{
+    width:34px;height:26px;
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .annotation{
+    max-width:375px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px 18px;
+    font-size:12.5px;
+    line-height:1.6;
+    color:var(--text-600);
+  }
+  .annotation b{color:var(--text-900);}
+
+  /* ================= BOTTOM SHEET (Human-in-the-loop guardrail) ================= */
+  .sheet-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(10,20,35,.5);
+    z-index:40;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    border-radius:36px;
+    overflow:hidden;
+  }
+  .sheet-overlay.open{display:flex;}
+  .sheet-overlay.open .bottom-sheet{animation:sheetUp .32s cubic-bezier(.2,.85,.3,1);}
+  @keyframes sheetUp{
+    from{transform:translateY(100%);}
+    to{transform:translateY(0);}
+  }
+  .bottom-sheet{
+    width:100%;
+    background:var(--surface);
+    border-radius:22px 22px 0 0;
+    padding:10px 20px 26px;
+    text-align:center;
+  }
+  .sheet-handle{
+    width:38px;height:4px;
+    background:var(--border);
+    border-radius:4px;
+    margin:0 auto 16px;
+  }
+  .sheet-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--gold-100);
+    color:var(--gold-600);
+    font-size:10.5px;
+    font-weight:700;
+    padding:5px 11px;
+    border-radius:20px;
+    margin-bottom:14px;
+  }
+  .sheet-scan{
+    width:84px;height:84px;
+    margin:0 auto 14px;
+    border-radius:50%;
+    background:var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+  .sheet-scan::before,.sheet-scan::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    border:1.5px solid var(--gold-500);
+    opacity:0;
+  }
+  .sheet-scan.scanning::before{animation:ring 1.6s infinite;}
+  .sheet-scan.scanning::after{animation:ring 1.6s infinite .5s;}
+  @keyframes ring{
+    0%{opacity:.65;transform:scale(.85);}
+    100%{opacity:0;transform:scale(1.35);}
+  }
+  .sheet-scan svg{position:relative;z-index:2;transition:.25s;}
+  .sheet-scan.success{background:var(--green-100);}
+  .sheet-title{
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    margin-bottom:6px;
+  }
+  .sheet-sub{
+    font-size:12.5px;
+    color:var(--text-600);
+    line-height:1.55;
+    margin-bottom:6px;
+    padding:0 6px;
+  }
+  .sheet-amount{
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-weight:800;
+    font-size:19px;
+    color:var(--navy-900);
+    margin:10px 0 16px;
+  }
+  .sheet-status{
+    font-size:12px;
+    font-weight:700;
+    color:var(--gold-600);
+    margin-bottom:18px;
+    min-height:16px;
+  }
+  .sheet-status.ok{color:var(--green-600);}
+  .otp-row{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:16px;
+  }
+  .otp-box{
+    width:34px;height:40px;
+    border:1.5px solid var(--border);
+    border-radius:9px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    color:var(--navy-900);
+    background:var(--bg);
+    transition:.2s;
+  }
+  .otp-box.filled{border-color:var(--gold-500);background:var(--gold-100);}
+  .sheet-alt-link{
+    font-size:12px;
+    font-weight:600;
+    color:var(--navy-700);
+    text-decoration:underline;
+    cursor:pointer;
+    margin-bottom:18px;
+    display:inline-block;
+  }
+  .sheet-confirm-btn{
+    width:100%;
+    padding:13px;
+    border-radius:12px;
+    border:none;
+    background:var(--text-400);
+    color:#fff;
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    cursor:not-allowed;
+    transition:.2s;
+    margin-bottom:10px;
+  }
+  .sheet-confirm-btn.ready{
+    background:var(--green-600);
+    cursor:pointer;
+  }
+  .sheet-cancel-btn{
+    width:100%;
+    padding:11px;
+    border-radius:12px;
+    border:none;
+    background:transparent;
+    color:var(--text-600);
+    font-weight:600;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .sheet-guardrail-note{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    justify-content:center;
+    font-size:10.5px;
+    color:var(--text-400);
+    margin-top:4px;
+  }
+
+  /* ================= TOAST ================= */
+  .toast{
+    position:absolute;
+    left:16px; right:16px;
+    bottom:96px;
+    background:var(--navy-900);
+    color:#fff;
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:12px;
+    line-height:1.4;
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    z-index:50;
+    opacity:0;
+    transform:translateY(10px);
+    transition:.25s;
+    pointer-events:none;
+    box-shadow:0 10px 24px rgba(14,42,71,.35);
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast b{color:var(--gold-100);}
+
+  /* ================= RM WORKSPACE VIEW ================= */
+  .rm-scroll{
+    flex:1;
+    overflow-y:auto;
+    padding:16px 14px 24px;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .rm-scroll::-webkit-scrollbar{width:0;}
+  .rm-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    overflow:hidden;
+    box-shadow:0 2px 8px rgba(14,42,71,.06);
+  }
+  .rm-card-head{
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .rm-card-head .label{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--text-600);
+  }
+  .rm-card-body{padding:14px;}
+
+  .health-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .health-score{
+    width:62px;height:62px;
+    border-radius:50%;
+    background:conic-gradient(var(--gold-500) 0deg 259deg, var(--border) 259deg 360deg);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .health-score-inner{
+    width:50px;height:50px;
+    border-radius:50%;
+    background:var(--surface);
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+  }
+  .health-score-inner .num{font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:16px;color:var(--navy-900);line-height:1;}
+  .health-score-inner .max{font-size:8.5px;color:var(--text-400);}
+  .health-verdict{font-size:13px;font-weight:700;color:var(--navy-900);font-family:'Be Vietnam Pro',sans-serif;}
+  .health-verdict-sub{font-size:11px;color:var(--text-600);margin-top:2px;}
+
+  .signal-row{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    padding:7px 0;
+    font-size:12px;
+    line-height:1.45;
+    border-bottom:1px dashed var(--border);
+  }
+  .signal-row:last-of-type{border-bottom:none;}
+  .signal-row.good{color:var(--green-600);}
+  .signal-row.warn{color:var(--red-500);}
+  .signal-row span.txt{color:var(--text-900);flex:1;}
+
+  .ai-narrative{
+    margin-top:10px;
+    background:var(--blue-100);
+    color:var(--navy-800);
+    font-size:11.5px;
+    line-height:1.55;
+    padding:10px 11px;
+    border-radius:9px;
+  }
+
+  .script-fit{
+    background:var(--gold-100);
+    color:var(--gold-600);
+    font-size:10px;
+    font-weight:700;
+    padding:4px 9px;
+    border-radius:20px;
+  }
+  .script-product{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--navy-900);
+    margin-bottom:10px;
+    font-family:'Be Vietnam Pro',sans-serif;
+  }
+  .script-text{
+    background:var(--bg);
+    border-left:3px solid var(--gold-500);
+    padding:10px 12px;
+    border-radius:0 8px 8px 0;
+    font-size:12px;
+    line-height:1.6;
+    color:var(--text-900);
+    font-style:italic;
+  }
+  .script-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .btn-primary-lg{
+    width:100%;
+    padding:12px;
+    border-radius:11px;
+    border:none;
+    background:var(--navy-900);
+    color:#fff;
+    font-family:'Be Vietnam Pro',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    cursor:pointer;
+    transition:.2s;
+  }
+  .btn-primary-lg.sent{background:var(--green-600);cursor:default;}
+  .btn-secondary-lg{
+    width:100%;
+    padding:11px;
+    border-radius:11px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text-600);
+    font-weight:600;
+    font-size:12px;
+    cursor:pointer;
+  }
+
+  .task-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .task-row:last-child{border-bottom:none;padding-bottom:0;}
+  .task-dot{width:7px;height:7px;border-radius:50%;background:var(--gold-500);flex-shrink:0;}
+  .task-name{font-size:12px;font-weight:600;color:var(--text-900);flex:1;}
+  .task-time{font-size:10.5px;color:var(--text-400);}
+
+  /* ============================================================
+     [VOICE ADD-ON] Giao tiếp song song Giọng nói + Văn bản
+     Toàn bộ CSS dưới đây là PHẦN THÊM MỚI, không sửa style cũ.
+     ============================================================ */
+
+  /* --- Nút Micro trên Chatbar --- */
+  .icon-btn.mic-btn{
+    position:relative;
+    border-radius:50%;
+    transition:.18s;
+  }
+  .icon-btn.mic-btn:active{transform:scale(.9);}
+  .icon-btn.mic-btn.listening{
+    background:var(--red-500);
+    animation:micGlow 1.5s infinite;
+  }
+  .icon-btn.mic-btn.listening svg path{stroke:#fff;}
+  @keyframes micGlow{
+    0%{box-shadow:0 0 0 0 rgba(196,68,59,.55);}
+    70%{box-shadow:0 0 0 13px rgba(196,68,59,0);}
+    100%{box-shadow:0 0 0 0 rgba(196,68,59,0);}
+  }
+  .mic-tip{
+    position:absolute;top:-25px;left:50%;transform:translateX(-50%);
+    background:var(--navy-900);color:#fff;font-size:9px;font-weight:600;
+    padding:3px 8px;border-radius:8px;white-space:nowrap;pointer-events:none;
+    opacity:0;transition:.18s;font-family:'Inter',sans-serif;
+  }
+  .icon-btn.mic-btn.listening .mic-tip{opacity:1;}
+
+  /* --- Nút bật/tắt phản hồi bằng giọng nói trên Header --- */
+  .tts-toggle{
+    width:26px;height:26px;border-radius:8px;border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.16);color:#fff;transition:.18s;padding:0;
+  }
+  .tts-toggle.on{background:var(--gold-500);}
+  .tts-toggle.on svg path{stroke:var(--navy-900);}
+  .tts-toggle:active{transform:scale(.9);}
+
+  /* --- Lớp phủ + Bảng thoại (Voice Sheet) --- */
+  .voice-scrim{
+    position:absolute;inset:0;background:rgba(10,20,35,.42);
+    border-radius:36px;z-index:38;opacity:0;pointer-events:none;transition:.22s;
+  }
+  .voice-scrim.open{opacity:1;pointer-events:auto;}
+  .voice-panel{
+    position:absolute;left:0;right:0;bottom:0;z-index:39;
+    background:var(--surface);
+    border-radius:24px 24px 36px 36px;
+    box-shadow:0 -14px 40px rgba(14,42,71,.22);
+    padding:14px 18px 26px;
+    transform:translateY(115%);
+    transition:transform .32s cubic-bezier(.2,.85,.3,1);
+  }
+  .voice-panel.open{transform:translateY(0);}
+  .voice-handle{width:38px;height:4px;border-radius:4px;background:var(--border);margin:0 auto 12px;}
+  .voice-status{
+    text-align:center;font-family:'Be Vietnam Pro',sans-serif;
+    font-size:13px;font-weight:700;color:var(--navy-900);
+  }
+  .voice-hint{text-align:center;font-size:10.5px;color:var(--text-400);margin-top:3px;}
+
+  /* --- Sóng âm động --- */
+  .voice-wave{
+    display:flex;align-items:center;justify-content:center;gap:3px;
+    height:48px;margin:10px 0 8px;
+  }
+  .voice-wave span{
+    width:3.5px;height:5px;border-radius:3px;
+    background:linear-gradient(180deg,var(--gold-500),var(--navy-700));
+    transition:height .07s linear;
+  }
+  .voice-wave.idle span{background:var(--border);}
+
+  /* --- Khung Live Transcription --- */
+  .voice-transcript{
+    min-height:46px;background:var(--bg);
+    border:1px dashed var(--border);border-radius:var(--radius-md);
+    padding:9px 12px;font-size:12.5px;line-height:1.5;color:var(--text-900);
+    margin-bottom:12px;
+  }
+  .voice-transcript .vt-pending{color:var(--text-400);font-style:italic;}
+  .voice-transcript .vt-cursor{
+    display:inline-block;width:2px;height:13px;background:var(--gold-500);
+    vertical-align:-2px;animation:vtBlink .8s steps(1) infinite;margin-left:1px;
+  }
+  @keyframes vtBlink{0%,50%{opacity:1;}51%,100%{opacity:0;}}
+
+  .voice-actions{display:flex;align-items:center;gap:9px;}
+  .voice-circ{
+    width:42px;height:42px;border-radius:50%;flex-shrink:0;
+    border:1px solid var(--border);background:var(--surface);
+    color:var(--text-600);font-size:15px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .voice-circ:active{transform:scale(.92);}
+  .voice-stop{
+    flex:1;height:42px;border-radius:21px;border:none;cursor:pointer;
+    background:var(--navy-900);color:#fff;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;
+  }
+  .voice-stop.processing{background:var(--text-400);}
+  .voice-stop:active{transform:scale(.98);}
+
+  /* --- Nút Loa cạnh bong bóng trả lời của Trợ lý --- */
+  .speak-btn{
+    display:inline-flex;align-items:center;gap:5px;
+    margin-top:6px;padding:3px 9px;border-radius:12px;
+    border:1px solid var(--border);background:var(--surface);
+    color:var(--text-600);font-size:10px;font-weight:600;cursor:pointer;
+    font-family:'Inter',sans-serif;transition:.15s;
+  }
+  .speak-btn:active{transform:scale(.94);}
+  .speak-btn.playing{
+    background:var(--gold-100);border-color:var(--gold-500);color:var(--gold-600);
+  }
+  .speak-btn.playing svg path{stroke:var(--gold-600);}
+  .speak-btn .eq{display:inline-flex;gap:2px;align-items:flex-end;height:9px;}
+  .speak-btn .eq i{width:2px;height:3px;background:var(--gold-600);border-radius:2px;animation:eqBar .7s infinite ease-in-out;}
+  .speak-btn .eq i:nth-child(2){animation-delay:.15s;}
+  .speak-btn .eq i:nth-child(3){animation-delay:.3s;}
+  @keyframes eqBar{0%,100%{height:3px;}50%{height:9px;}}
+
+  /* --- Nhãn "Voice" trên bong bóng của khách hàng --- */
+  .voice-tag{
+    display:inline-flex;align-items:center;gap:3px;
+    background:rgba(255,255,255,.2);color:#fff;
+    font-size:9px;font-weight:600;padding:1px 6px;border-radius:8px;margin-right:6px;
+    vertical-align:1px;
+  }
+
+  /* --- Thanh chọn giọng đọc tiếng Việt --- */
+  .voice-bar{
+    display:none;
+    background:var(--navy-800);
+    padding:7px 12px 8px;
+    border-bottom:1px solid rgba(255,255,255,.12);
+  }
+  .voice-bar.show{display:block;}
+  .voice-bar-row{display:flex;align-items:center;gap:7px;}
+  .voice-bar label{
+    font-size:9.5px;font-weight:700;color:rgba(255,255,255,.65);
+    letter-spacing:.04em;text-transform:uppercase;flex-shrink:0;
+  }
+  .voice-bar select{
+    flex:1;min-width:0;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:8px;color:#fff;font-size:10.5px;
+    padding:4px 6px;font-family:'Inter',sans-serif;outline:none;
+  }
+  .voice-bar select option{color:#14213D;background:#fff;}
+  .voice-bar .vb-test{
+    flex-shrink:0;border:none;border-radius:8px;cursor:pointer;
+    background:var(--gold-500);color:var(--navy-900);
+    font-size:10px;font-weight:700;padding:5px 9px;font-family:'Inter',sans-serif;
+  }
+  .voice-bar .vb-note{
+    font-size:9.5px;color:rgba(255,255,255,.6);margin-top:5px;line-height:1.4;
+  }
+  .voice-bar .vb-note b{color:var(--gold-500);}
+
+  /* --- Chấm "đang nói" trên avatar RM ở header --- */
+  .rm-avatar.speaking{position:relative;}
+  .rm-avatar.speaking::after{
+    content:'';position:absolute;inset:-3px;border-radius:inherit;
+    border:2px solid var(--gold-500);animation:rmRipple 1.1s infinite;
+  }
+  @keyframes rmRipple{0%{transform:scale(1);opacity:.9;}100%{transform:scale(1.3);opacity:0;}}
+
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="stage-label">Trợ lý số KHDN — Thiết kế giao diện</div>
+
+  <div class="view-switch" id="viewSwitch">
+    <button class="view-btn active" data-view="khdn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2"/></svg>
+      KHDN View
+    </button>
+    <button class="view-btn" data-view="rm">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M8.5 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2"/></svg>
+      RM Workspace Copilot
+    </button>
+  </div>
+
+  <div class="phone">
+
+    <!-- ========================= SCREEN 1 — KHDN VIEW ========================= -->
+    <div class="screen active" data-view="khdn">
+      <div class="notch"></div>
+
+      <div class="statusbar">
+        <span>9:41</span>
+        <div class="icons">
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="none"><rect x="0" y="6" width="3" height="5" rx="0.5" fill="#fff"/><rect x="4.5" y="4" width="3" height="7" rx="0.5" fill="#fff"/><rect x="9" y="2" width="3" height="9" rx="0.5" fill="#fff"/><rect x="13.5" y="0" width="2.5" height="11" rx="0.5" fill="#fff" fill-opacity="0.4"/></svg>
+          <svg width="18" height="11" viewBox="0 0 18 11" fill="none"><rect x="0.5" y="0.5" width="15" height="10" rx="2.5" stroke="#fff"/><rect x="2" y="2" width="12" height="7" rx="1.5" fill="#fff"/><rect x="16.5" y="3.5" width="1.5" height="4" rx="0.7" fill="#fff"/></svg>
+        </div>
+      </div>
+
+      <div class="app-header">
+        <div class="app-header-top">
+          <div class="back-btn" id="khdnBackBtn" title="Quay lại menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="header-title">TRỢ LÝ SỐ DOANH NGHIỆP</div>
+          <div class="header-actions">
+            <button class="tts-toggle on" id="ttsToggle" type="button" title="Bật/Tắt phản hồi bằng giọng nói">
+              <svg id="ttsIcon" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H2v6h4l5 4V5z" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>
+            </button>
+            <button class="tts-toggle" id="voiceCfgBtn" type="button" title="Chọn giọng đọc tiếng Việt">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="rm-identity">
+          <div class="rm-avatar">RM</div>
+          <div>
+            <div class="rm-name">Mai — Trợ lý RM số</div>
+            <div class="rm-status">
+              <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="#3DDC84"/></svg>
+              Đang hoạt động · CN Hai Bà Trưng hỗ trợ
+            </div>
+          </div>
+          <div class="rm-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="#fff" stroke-width="2"/></svg>
+            Gọi RM
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== [VOICE ADD-ON] Thanh chọn giọng đọc tiếng Việt ===== -->
+      <div class="voice-bar" id="voiceBar">
+        <div class="voice-bar-row">
+          <label>Giọng đọc</label>
+          <select id="voiceSelect"></select>
+          <button class="vb-test" id="voiceTest" type="button">Nghe thử</button>
+        </div>
+        <div class="vb-note" id="voiceNote"></div>
+      </div>
+
+      <div class="chat" id="chat">
+
+        <div class="bubble-row assistant">
+          <div class="mini-avatar">RM</div>
+          <div>
+            <div class="bubble assistant">
+              Chào anh Quân 👋 Em là trợ lý số hỗ trợ Công ty TNHH Phú Thành. Anh cần em tra cứu số dư, duyệt giao dịch, xem dự báo dòng tiền, tra hạn mức/phí hay đề xuất giải pháp tài chính ạ?
+            </div>
+            <div class="timestamp">09:41</div>
+          </div>
+        </div>
+
+        <div class="chips" id="chips">
+          <div class="chip" data-intent="balance">💰 Số dư tài khoản</div>
+          <div class="chip" data-intent="approval">✅ Giao dịch chờ duyệt</div>
+          <div class="chip" data-intent="forecast">📈 Dự báo dòng tiền</div>
+          <div class="chip" data-intent="rag">📄 Tra cứu hạn mức &amp; Phí</div>
+          <div class="chip" data-intent="rcm">✨ Đề xuất giải pháp tài chính</div>
+          <div class="chip" data-intent="human">🎧 Gặp RM thật</div>
+        </div>
+
+      </div>
+
+      <!-- Bottom sheet: Human-in-the-loop guardrail for approval -->
+      <div class="sheet-overlay" id="sheetOverlay">
+        <div class="bottom-sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2l8 4v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6l8-4z" stroke="currentColor" stroke-width="2"/></svg>
+            XÁC THỰC GIAO DỊCH
+          </div>
+
+          <div class="sheet-scan scanning" id="sheetScan">
+            <svg id="scanIcon" width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 3a4 4 0 00-4 4v1M12 3a4 4 0 014 4v1M4 11v2a8 8 0 0016 0v-2M12 8v6M9 21c1 .3 2 .5 3 .5s2-.2 3-.5M7.5 18.5c.3-3 .3-6 0-9" stroke="var(--gold-600)" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </div>
+
+          <div class="sheet-title">Xác nhận duyệt giao dịch</div>
+          <div class="sheet-sub" id="sheetTarget">Chuyển tiền — Cty Kim Long</div>
+          <div class="sheet-amount" id="sheetAmount">450.000.000 đ</div>
+
+          <div class="sheet-status" id="sheetStatus">Đang xác thực Face ID...</div>
+
+          <div class="otp-row" id="otpRow" style="display:none;">
+            <div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div>
+            <div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div>
+          </div>
+
+          <span class="sheet-alt-link" id="sheetAltLink">Dùng mã Soft OTP thay thế</span>
+
+          <button class="sheet-confirm-btn" id="sheetConfirmBtn" disabled>Xác nhận &amp; Duyệt giao dịch</button>
+          <button class="sheet-cancel-btn" id="sheetCancelBtn">Hủy thao tác</button>
+
+          <div class="sheet-guardrail-note">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2l8 4v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6l8-4z" stroke="currentColor" stroke-width="1.6"/></svg>
+            Bắt buộc xác thực trước khi duyệt — Human-in-the-loop
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== [VOICE ADD-ON] Bảng thoại: Lắng nghe + Live Transcription ===== -->
+      <div class="voice-scrim" id="voiceScrim"></div>
+      <div class="voice-panel" id="voicePanel">
+        <div class="voice-handle"></div>
+        <div class="voice-status" id="voiceStatus">Đang lắng nghe…</div>
+        <div class="voice-hint" id="voiceHint">Anh cứ nói tự nhiên, ví dụ: “Cho anh xem số dư tài khoản”</div>
+        <div class="voice-wave idle" id="voiceWave"></div>
+        <div class="voice-transcript" id="voiceTranscript"><span class="vt-pending">Đang chờ giọng nói…</span><span class="vt-cursor"></span></div>
+        <div class="voice-actions">
+          <button class="voice-circ" id="voiceCancel" type="button" title="Huỷ">✕</button>
+          <button class="voice-stop" id="voiceStop" type="button">Dừng &amp; Gửi</button>
+          <button class="voice-circ" id="voiceKbd" type="button" title="Chuyển sang gõ phím">⌨</button>
+        </div>
+      </div>
+
+      <div class="toast" id="toastKhdn"></div>
+
+      <div class="input-bar">
+        <button class="icon-btn" type="button">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" stroke="#5B6B82" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <input type="text" class="text-input" id="textInput" placeholder="Nhập câu hỏi, ví dụ: số dư, dòng tiền, phí...">
+        <button class="icon-btn mic-btn" id="micBtn" type="button" title="Bấm để nói với Trợ lý">
+          <span class="mic-tip">Đang nghe…</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" stroke="#5B6B82" stroke-width="1.8"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4" stroke="#5B6B82" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="send-btn" id="sendBtn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#94A2B8" stroke-width="1.8"/></svg></div>
+          Trang chủ
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="14" rx="2" stroke="#94A2B8" stroke-width="1.8"/><path d="M2 10h20" stroke="#94A2B8" stroke-width="1.8"/></svg></div>
+          Tài khoản
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3" stroke="#94A2B8" stroke-width="1.8"/></svg></div>
+          Chuyển tiền
+        </div>
+        <div class="nav-item active">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#0E2A47" stroke-width="1.8"/></svg></div>
+          Trợ lý
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#94A2B8" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.164.398.505.72 1 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="#94A2B8" stroke-width="1.5"/></svg></div>
+          Thêm
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= SCREEN 2 — RM WORKSPACE COPILOT VIEW ========================= -->
+    <div class="screen" data-view="rm">
+      <div class="notch"></div>
+
+      <div class="statusbar">
+        <span>9:41</span>
+        <div class="icons">
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="none"><rect x="0" y="6" width="3" height="5" rx="0.5" fill="#fff"/><rect x="4.5" y="4" width="3" height="7" rx="0.5" fill="#fff"/><rect x="9" y="2" width="3" height="9" rx="0.5" fill="#fff"/><rect x="13.5" y="0" width="2.5" height="11" rx="0.5" fill="#fff" fill-opacity="0.4"/></svg>
+          <svg width="18" height="11" viewBox="0 0 18 11" fill="none"><rect x="0.5" y="0.5" width="15" height="10" rx="2.5" stroke="#fff"/><rect x="2" y="2" width="12" height="7" rx="1.5" fill="#fff"/><rect x="16.5" y="3.5" width="1.5" height="4" rx="0.7" fill="#fff"/></svg>
+        </div>
+      </div>
+
+      <div class="app-header">
+        <div class="app-header-top">
+          <div class="back-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="header-title">RM WORKSPACE · COPILOT</div>
+          <div class="header-actions">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="rm-identity">
+          <div class="rm-avatar">LA</div>
+          <div>
+            <div class="rm-name">Lan Anh — CV KH Ưu tiên</div>
+            <div class="rm-status">
+              <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="#3DDC84"/></svg>
+              Đang phụ trách 42 KHDN · CN Hai Bà Trưng
+            </div>
+          </div>
+          <div class="rm-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            6 việc
+          </div>
+        </div>
+        <div class="company-selector">
+          <div class="cs-left">
+            <div class="cs-logo">PT</div>
+            <div>
+              <div class="cs-name">Công ty TNHH Phú Thành</div>
+              <div class="cs-sub">MST 0102 456 789 · SME Plus</div>
+            </div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <div class="rm-scroll" id="rmScroll">
+
+        <div class="rm-card">
+          <div class="rm-card-head">
+            <span class="label">Tóm tắt sức khỏe tài chính · AI</span>
+            <span class="head-badge">Cập nhật 5 phút trước</span>
+          </div>
+          <div class="rm-card-body">
+            <div class="health-top">
+              <div class="health-score">
+                <div class="health-score-inner">
+                  <div class="num">72</div>
+                  <div class="max">/100</div>
+                </div>
+              </div>
+              <div>
+                <div class="health-verdict">Khá — cần theo dõi thanh khoản</div>
+                <div class="health-verdict-sub">Nhóm 1 · Không nợ quá hạn</div>
+              </div>
+            </div>
+
+            <div class="signal-row good">
+              <span>✅</span><span class="txt">Doanh thu tăng 12% so với quý trước</span>
+            </div>
+            <div class="signal-row good">
+              <span>✅</span><span class="txt">Số dư CASA bình quân tăng 8% trong 30 ngày</span>
+            </div>
+            <div class="signal-row warn">
+              <span>⚠️</span><span class="txt">2 lần thanh toán trễ hạn cho nhà cung cấp trong 30 ngày</span>
+            </div>
+            <div class="signal-row warn">
+              <span>⚠️</span><span class="txt">Dự báo thiếu hụt thanh khoản ngắn hạn vào tuần 4 (~450tr)</span>
+            </div>
+
+            <div class="ai-narrative">
+              🤖 Nhận định AI: doanh nghiệp tăng trưởng ổn định nhưng có dấu hiệu áp lực dòng tiền theo chu kỳ cuối tháng do lệch kỳ thu–chi. Đây là thời điểm phù hợp để giới thiệu giải pháp thấu chi linh hoạt nhằm tăng gắn kết và giảm rủi ro chuyển nhóm nợ.
+            </div>
+          </div>
+        </div>
+
+        <div class="rm-card">
+          <div class="rm-card-head">
+            <span class="label">Kịch bản tư vấn · AI Draft</span>
+            <span class="script-fit">Độ phù hợp 91%</span>
+          </div>
+          <div class="rm-card-body">
+            <div class="script-product">🏦 Thấu chi online SME — Hạn mức đề xuất 2 tỷ đồng</div>
+            <div class="script-text" id="scriptText">
+              "Chào anh Quân, em là Lan Anh — RM phụ trách DN mình. Qua theo dõi dòng tiền, em thấy công ty có thể phát sinh thiếu hụt thanh khoản ngắn hạn vào cuối tháng do lệch kỳ thu–chi. Em xin đề xuất gói Thấu chi online hạn mức 2 tỷ, lãi tính theo dư nợ thực tế, không tài sản đảm bảo, phê duyệt trong 24h. Anh có muốn em gửi hồ sơ đề xuất chi tiết không ạ?"
+            </div>
+            <div class="script-actions">
+              <button class="btn-primary-lg" id="scriptSendBtn">✓ Chấp nhận kịch bản &amp; Gửi cho khách hàng</button>
+              <button class="btn-secondary-lg" id="scriptEditBtn">✎ Chỉnh sửa kịch bản</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rm-card">
+          <div class="rm-card-head">
+            <span class="label">Nhiệm vụ hôm nay</span>
+            <span class="head-badge">3/6</span>
+          </div>
+          <div class="rm-card-body">
+            <div class="task-row"><div class="task-dot"></div><div class="task-name">Gọi xác nhận hồ sơ Cty Kim Long</div><div class="task-time">10:30</div></div>
+            <div class="task-row"><div class="task-dot"></div><div class="task-name">Duyệt hạn mức tạm ứng — Phú Thành</div><div class="task-time">14:00</div></div>
+            <div class="task-row"><div class="task-dot"></div><div class="task-name">Review kịch bản AI cho 5 KH nhóm SME Plus</div><div class="task-time">16:00</div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="toast" id="toastRm"></div>
+
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M8.5 11a4 4 0 100-8 4 4 0 000 8z" stroke="#94A2B8" stroke-width="1.8"/></svg></div>
+          Khách hàng
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#94A2B8" stroke-width="1.8"/></svg></div>
+          Cơ hội
+        </div>
+        <div class="nav-item active">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2a4 4 0 00-4 4v1M12 2a4 4 0 014 4v1M4 10v2a8 8 0 0016 0v-2" stroke="#0E2A47" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          Copilot
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="#94A2B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="#94A2B8" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          Nhiệm vụ
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#94A2B8" stroke-width="1.8"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke="#94A2B8" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          Cá nhân
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="annotation">
+    <b>KHDN View:</b> gõ trực tiếp câu hỏi (số dư, duyệt, dòng tiền, phí, quy định, đề xuất) hoặc chọn chip để xem <b>thẻ dữ liệu có cấu trúc</b>. Thao tác "Duyệt" giao dịch luôn bắt buộc qua bước <b>xác thực sinh trắc học / Soft OTP</b> (Human-in-the-loop) trước khi ghi nhận, đảm bảo kiểm soát rủi ro. Chuyển sang <b>RM Workspace Copilot</b> để xem góc nhìn nội bộ: AI tóm tắt sức khỏe tài chính khách hàng và tự soạn kịch bản tư vấn bán chéo.
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   VIEW SWITCH — KHDN <-> RM Workspace Copilot
+   ============================================================ */
+const viewBtns = document.querySelectorAll('.view-btn');
+const screens = document.querySelectorAll('.screen');
+viewBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.dataset.view;
+    viewBtns.forEach(b => b.classList.toggle('active', b === btn));
+    screens.forEach(s => s.classList.toggle('active', s.dataset.view === view));
+  });
+});
+
+/* ============================================================
+   GREENNODE AI PLATFORM — cấu hình kết nối thật (MaaS API)
+   ============================================================ */
+const GREENNODE_CONFIG = {
+  apiUrl: 'https://api.aiplatform.greennode.ai/v1/chat/completions',
+  apiKey: 'GREENNODE_API_KEY_HERE',
+  model: 'qwen-flash-3.6',
+};
+
+const FEE_KNOWLEDGE_BASE = [
+  {
+    id: 'kb1',
+    keywords: ['hạn mức', 'chuyển tiền', 'sme plus', 'gói'],
+    question: 'Hạn mức chuyển tiền/ngày (gói SME Plus)',
+    answer: '500.000.000 đ/ngày · tối đa 20 giao dịch',
+    source: 'Biểu phí dịch vụ KHDN — Quyết định 118/2025/QĐ-HĐQT, hiệu lực 01/07/2025'
+  },
+  {
+    id: 'kb2',
+    keywords: ['phí', 'napas', 'liên ngân hàng', '24/7'],
+    question: 'Phí chuyển tiền liên ngân hàng (Napas 24/7)',
+    answer: '0,01% số tiền · tối thiểu 8.000đ, tối đa 15.000đ/GD',
+    source: 'Biểu phí dịch vụ KHDN — Quyết định 118/2025/QĐ-HĐQT, hiệu lực 01/07/2025'
+  },
+  {
+    id: 'kb3',
+    keywords: ['duyệt', 'mobile app', 'người duyệt', '1 cấp'],
+    question: 'Hạn mức duyệt trên Mobile App (Người duyệt 1 cấp)',
+    answer: 'Tối đa 2.000.000.000 đ/giao dịch',
+    source: 'Quy chế phê duyệt giao dịch điện tử KHDN — Quyết định 118/2025/QĐ-HĐQT'
+  },
+  {
+    id: 'kb4',
+    keywords: ['thấu chi', 'sme', 'lãi suất'],
+    question: 'Thấu chi online SME',
+    answer: 'Hạn mức tới 2 tỷ đồng · lãi theo dư nợ thực tế · giải ngân tự động trong 24h',
+    source: 'Biểu phí & lãi suất sản phẩm tín dụng KHDN — cập nhật gần nhất'
+  },
+];
+
+function retrieveContext(query, topK = 3){
+  const q = query.toLowerCase();
+  const scored = FEE_KNOWLEDGE_BASE.map(item => {
+    const score = item.keywords.reduce((acc, kw) => acc + (q.includes(kw) ? 1 : 0), 0);
+    return { item, score };
+  }).filter(x => x.score > 0);
+  scored.sort((a, b) => b.score - a.score);
+  const top = scored.slice(0, topK).map(x => x.item);
+  return top.length ? top : FEE_KNOWLEDGE_BASE;
+}
+
+async function callGreenNodeRAG(userQuery){
+  const context = retrieveContext(userQuery);
+  const contextText = context
+    .map(c => `- ${c.question}: ${c.answer} (Nguồn: ${c.source})`)
+    .join('\n');
+
+  const systemPrompt = `Bạn là trợ lý VRM của MSB, trả lời câu hỏi KHDN về biểu phí/quy định.
+CHỈ được dùng thông tin trong NGỮ CẢNH dưới đây, KHÔNG được bịa thêm số liệu.
+Nếu ngữ cảnh không đủ để trả lời, hãy nói rõ "chưa có dữ liệu, sẽ chuyển RM kiểm tra".
+Trả lời DUY NHẤT bằng JSON hợp lệ theo đúng schema, không thêm chữ nào khác:
+{"items":[{"question":"...","answer":"..."}],"source":"..."}
+
+NGỮ CẢNH:
+${contextText}`;
+
+  const resp = await fetch(GREENNODE_CONFIG.apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${GREENNODE_CONFIG.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: GREENNODE_CONFIG.model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userQuery },
+      ],
+      temperature: 0.2,
+      max_tokens: 500,
+    }),
+  });
+
+  if(!resp.ok) throw new Error(`GreenNode API lỗi: ${resp.status}`);
+  const data = await resp.json();
+  const raw = data.choices?.[0]?.message?.content ?? '';
+  const clean = raw.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+function renderRagCardFromLive(result, fallbackNote){
+  const items = (result.items || []).map(it => `
+      <div class="rag-item">
+        <div class="rag-q">${it.question}</div>
+        <div class="rag-a">${it.answer}</div>
+      </div>`).join('');
+  return `
+    <div class="data-card card-enter">
+      <div class="data-card-head">
+        <span class="label">Hạn mức &amp; Biểu phí</span>
+        <span class="head-badge">RAG · GreenNode Live</span>
+      </div>
+      <div class="data-card-body">
+        ${items}
+        <div class="rag-source">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span>Nguồn: ${result.source || 'Biểu phí dịch vụ KHDN'}${fallbackNote ? ' · ' + fallbackNote : ''}</span>
+        </div>
+      </div>
+      <div class="card-cta" data-action="view-source-doc">Xem văn bản gốc →</div>
+    </div>`;
+}
+
+/* ============================================================
+   KHDN CHAT — chips, structured cards, free-text intent parsing
+   ============================================================ */
+const chat = document.getElementById('chat');
+const chipsBar = document.getElementById('chips');
+const textInput = document.getElementById('textInput');
+const sendBtn = document.getElementById('sendBtn');
+let answered = {};
+
+const responses = {
+  balance: {
+    userText: "Cho tôi xem số dư các tài khoản",
+    render: () => `
+      <div class="data-card card-enter">
+        <div class="data-card-head">
+          <span class="label">Số dư tài khoản · 09:41</span>
+        </div>
+        <div class="data-card-body">
+          <div class="acct-row">
+            <div><div class="acct-name">TK Thanh toán VND</div><div class="acct-no">•••• 4821</div></div>
+            <div class="acct-amount">2.847.500.000 đ</div>
+          </div>
+          <div class="acct-row">
+            <div><div class="acct-name">TK Ký quỹ L/C</div><div class="acct-no">•••• 1190</div></div>
+            <div class="acct-amount">640.000.000 đ</div>
+          </div>
+          <div class="acct-row">
+            <div><div class="acct-name">TK Ngoại tệ USD</div><div class="acct-no">•••• 7702</div></div>
+            <div class="acct-amount">$18,240.00</div>
+          </div>
+          <div class="acct-total">
+            <div class="lbl">Tổng khả dụng (quy đổi VND)</div>
+            <div class="val">3.928 tỷ</div>
+          </div>
+        </div>
+        <div class="card-cta" data-action="view-statement">Xem chi tiết sao kê →</div>
+      </div>`
+  },
+  approval: {
+    userText: "Còn giao dịch nào chờ tôi duyệt không?",
+    render: () => `
+      <div class="data-card card-enter" id="approvalCard">
+        <div class="data-card-head">
+          <span class="label">2 giao dịch chờ duyệt</span>
+        </div>
+        <div class="data-card-body">
+          <div class="apv-item" data-name="Chuyển tiền — Cty Kim Long" data-amount="450.000.000 đ">
+            <div class="apv-top">
+              <div>
+                <div class="apv-title">Chuyển tiền — Cty Kim Long</div>
+                <div class="apv-sub">Người tạo: Kế toán Ngọc Anh</div>
+                <div class="apv-badge">Hết hạn duyệt sau 3h</div>
+              </div>
+              <div class="apv-amount">450.000.000 đ</div>
+            </div>
+            <div class="apv-actions">
+              <button class="btn-mini btn-approve">Duyệt</button>
+              <button class="btn-mini btn-reject">Từ chối</button>
+            </div>
+          </div>
+          <div class="apv-item" data-name="Thanh toán lương tháng 8" data-amount="1.220.000.000 đ">
+            <div class="apv-top">
+              <div>
+                <div class="apv-title">Thanh toán lương tháng 8</div>
+                <div class="apv-sub">Người tạo: HR Minh Thư</div>
+              </div>
+              <div class="apv-amount">1.220.000.000 đ</div>
+            </div>
+            <div class="apv-actions">
+              <button class="btn-mini btn-approve">Duyệt</button>
+              <button class="btn-mini btn-reject">Từ chối</button>
+            </div>
+          </div>
+        </div>
+      </div>`
+  },
+  forecast: {
+    userText: "Dự báo dòng tiền 6 tuần tới thế nào?",
+    render: () => `
+      <div class="data-card card-enter">
+        <div class="data-card-head">
+          <span class="label">Dự báo dòng tiền · 6 tuần</span>
+        </div>
+        <div class="data-card-body">
+          <div class="fc-summary">
+            <div class="item"><div class="val">+8.2%</div><div class="lbl">Tăng trưởng dự kiến</div></div>
+            <div class="item warn"><div class="val">Tuần 4</div><div class="lbl">Điểm cần lưu ý</div></div>
+          </div>
+          <div class="fc-chart">
+            <div class="fc-bar" style="height:55%"></div>
+            <div class="fc-bar" style="height:68%"></div>
+            <div class="fc-bar" style="height:44%"></div>
+            <div class="fc-bar low" style="height:22%"></div>
+            <div class="fc-bar" style="height:60%"></div>
+            <div class="fc-bar" style="height:75%"></div>
+          </div>
+          <div class="fc-labels"><span>T1</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span></div>
+          <div class="fc-note">⚠️ Tuần 4: dòng tiền có thể âm do đến hạn thanh toán NCC Kim Long (450tr) trùng kỳ trả lương. Cân nhắc gia hạn hoặc thu xếp hạn mức thấu chi.</div>
+        </div>
+        <div class="card-cta" data-action="view-forecast-model">Xem chi tiết mô hình dự báo →</div>
+      </div>`
+  },
+  rag: {
+    userText: "Hạn mức chuyển tiền và biểu phí hiện tại là bao nhiêu?",
+    render: async (userText) => {
+      try {
+        const result = await callGreenNodeRAG(userText || "Hạn mức chuyển tiền và biểu phí hiện tại là bao nhiêu?");
+        return renderRagCardFromLive(result);
+      } catch(err) {
+        console.warn('GreenNode API chưa sẵn sàng, dùng dữ liệu dự phòng:', err);
+        return renderRagCardFromLive({
+          items: [
+            { question: 'Hạn mức chuyển tiền/ngày (gói SME Plus)', answer: '500.000.000 đ/ngày · tối đa 20 giao dịch' },
+            { question: 'Phí chuyển tiền liên ngân hàng (Napas 24/7)', answer: '0,01% số tiền · tối thiểu 8.000đ, tối đa 15.000đ/GD' },
+            { question: 'Hạn mức duyệt trên Mobile App (Người duyệt 1 cấp)', answer: 'Tối đa 2.000.000.000 đ/giao dịch' },
+          ],
+          source: 'Biểu phí dịch vụ KHDN — Quyết định 118/2025/QĐ-HĐQT, hiệu lực 01/07/2025',
+        }, 'chế độ dự phòng (offline)');
+      }
+    }
+  },
+  rcm: {
+    userText: "Có giải pháp tài chính nào phù hợp với công ty tôi không?",
+    render: () => `
+      <div class="data-card card-enter">
+        <div class="data-card-head">
+          <span class="label">Gợi ý dành cho doanh nghiệp</span>
+          <span class="head-badge">RCM Engine</span>
+        </div>
+        <div class="data-card-body">
+          <div class="rcm-insight">📊 Dựa trên dòng tiền 3 tháng gần nhất, công ty có 4 lần thiếu hụt thanh khoản ngắn hạn vào cuối tháng.</div>
+          <div class="rcm-product">
+            <div class="rcm-icon">🏦</div>
+            <div>
+              <div class="rcm-name">Thấu chi online SME</div>
+              <div class="rcm-desc">Hạn mức tới 2 tỷ đồng · lãi theo dư nợ thực tế · giải ngân tự động trong 24h</div>
+            </div>
+          </div>
+          <div class="rcm-product">
+            <div class="rcm-icon">💰</div>
+            <div>
+              <div class="rcm-name">Tiền gửi kỳ hạn linh hoạt</div>
+              <div class="rcm-desc">Kỳ hạn 7–30 ngày · lãi suất ưu đãi 4,2%/năm · rút gốc linh hoạt</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-cta" data-action="init-profile">⚡ Khởi tạo hồ sơ nhanh →</div>
+      </div>`
+  },
+  human: {
+    userText: "Tôi muốn nói chuyện với RM thật",
+    render: () => {
+      const now = new Date();
+      const eta = new Date(now.getTime() + 15*60000);
+      const pad = n => String(n).padStart(2,'0');
+      const etaStr = `${pad(eta.getHours())}:${pad(eta.getMinutes())}`;
+      return `
+      <div class="bubble assistant card-enter" style="max-width:88%">
+        Dạ vâng, em đã ghi nhận yêu cầu và chuyển tiếp cho chị Lan Anh — RM phụ trách công ty mình ạ.
+      </div>
+      <div class="data-card card-enter" id="humanConnectCard" style="max-width:88%;margin-top:8px;">
+        <div class="data-card-head">
+          <span class="label">Kết nối RM phụ trách</span>
+          <span class="head-badge" id="humanStatusBadge" style="background:var(--green-100);color:var(--green-600);">Đã tiếp nhận</span>
+        </div>
+        <div class="data-card-body">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div class="rm-avatar" style="width:44px;height:44px;font-size:15px;">LA</div>
+            <div>
+              <div style="font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:13.5px;color:var(--text-900);">Lan Anh — CV KH Ưu tiên</div>
+              <div class="rm-status" style="color:var(--text-600);margin-top:2px;">
+                <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="#3DDC84"/></svg>
+                CN Hai Bà Trưng · đang phụ trách 42 KHDN
+              </div>
+            </div>
+          </div>
+          <div class="rag-source" style="background:var(--gold-100);color:var(--gold-600);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span id="humanEtaText">Dự kiến chị Lan Anh gọi lại cho anh trước <b>${etaStr}</b> (trong vòng 15 phút, giờ hành chính)</span>
+          </div>
+        </div>
+        <div class="card-cta" data-action="call-rm">📞 Gọi RM ngay</div>
+      </div>`;
+    }
+  },
+  fallback: {
+    render: () => `
+      <div class="bubble assistant card-enter" style="max-width:88%">
+        Dạ em chưa rõ yêu cầu này ạ 🙏 Anh có thể thử hỏi về <b>số dư</b>, <b>duyệt giao dịch</b>, <b>dòng tiền</b>, <b>phí/quy định</b> hoặc <b>đề xuất giải pháp tài chính</b>, hoặc chọn nhanh gợi ý bên dưới nhé.
+      </div>`
+  }
+};
+
+const keywordMap = [
+  { intent:'approval', words:['duyệt','phê duyệt','chờ duyệt'] },
+  { intent:'balance', words:['số dư','tài khoản','balance'] },
+  { intent:'forecast', words:['dòng tiền','dự báo','cash flow'] },
+  { intent:'rag', words:['phí','quy định','hạn mức','biểu phí','thông tư'] },
+  { intent:'rcm', words:['đề xuất','giải pháp','gợi ý','sản phẩm'] },
+  { intent:'human', words:['rm thật','gặp rm','người thật','tư vấn viên'] },
+];
+
+function detectIntent(text){
+  const t = text.toLowerCase();
+  for(const entry of keywordMap){
+    if(entry.words.some(w => t.includes(w))) return entry.intent;
+  }
+  return null;
+}
+
+function scrollToBottom(){ chat.scrollTop = chat.scrollHeight; }
+
+function appendUserBubble(text){
+  const userRow = document.createElement('div');
+  userRow.className = 'bubble-row user';
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  userRow.innerHTML = `<div><div class="bubble user">${text}</div><div class="timestamp">${hh}:${mm}</div></div>`;
+  chat.insertBefore(userRow, chipsBar);
+  scrollToBottom();
+}
+
+function appendAssistantResponse(renderFn, liveUserText){
+  const typingRow = document.createElement('div');
+  typingRow.className = 'bubble-row assistant';
+  typingRow.innerHTML = `<div class="mini-avatar">RM</div><div class="typing"><span></span><span></span><span></span></div>`;
+  chat.insertBefore(typingRow, chipsBar);
+  scrollToBottom();
+
+  const minDelay = new Promise(resolve => setTimeout(resolve, 900));
+  const rendered = Promise.resolve(renderFn(liveUserText));
+
+  Promise.all([rendered, minDelay]).then(([html]) => {
+    typingRow.remove();
+    const respRow = document.createElement('div');
+    respRow.className = 'bubble-row assistant';
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    respRow.innerHTML = `<div class="mini-avatar">RM</div><div>${html}<div class="timestamp">${hh}:${mm}</div></div>`;
+    chat.insertBefore(respRow, chipsBar);
+    scrollToBottom();
+  });
+}
+
+function triggerIntent(intent, userTextOverride){
+  const data = responses[intent];
+  if(!data) return;
+  appendUserBubble(userTextOverride || data.userText);
+  appendAssistantResponse(data.render, userTextOverride || data.userText);
+}
+
+chipsBar.addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  const intent = chip.dataset.intent;
+  if(answered[intent]) return;
+  answered[intent] = true;
+  chip.classList.add('active');
+  triggerIntent(intent);
+});
+
+/* ============================================================
+   BACK BUTTON — quay lại màn hình chào ban đầu + menu chip
+   ============================================================ */
+const khdnBackBtn = document.getElementById('khdnBackBtn');
+const khdnGreetingRow = chat.querySelector('.bubble-row.assistant');
+if(khdnBackBtn){
+  khdnBackBtn.addEventListener('click', () => {
+    Array.from(chat.children).forEach(el => {
+      if(el !== khdnGreetingRow && el !== chipsBar) el.remove();
+    });
+    chipsBar.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    answered = {};
+    chat.scrollTop = 0;
+  });
+}
+
+function handleTextSend(){
+  const val = textInput.value.trim();
+  if(!val) return;
+  const intent = detectIntent(val);
+  appendUserBubble(val);
+  if(intent){
+    appendAssistantResponse(responses[intent].render, val);
+  } else {
+    appendAssistantResponse(responses.fallback.render, val);
+  }
+  textInput.value = '';
+}
+sendBtn.addEventListener('click', handleTextSend);
+textInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){ e.preventDefault(); handleTextSend(); }
+});
+
+/* ============================================================
+   GUARDRAIL — Human-in-the-loop biometric / OTP confirmation
+   ============================================================ */
+const sheetOverlay = document.getElementById('sheetOverlay');
+const sheetScan = document.getElementById('sheetScan');
+const scanIcon = document.getElementById('scanIcon');
+const sheetTarget = document.getElementById('sheetTarget');
+const sheetAmount = document.getElementById('sheetAmount');
+const sheetStatus = document.getElementById('sheetStatus');
+const sheetConfirmBtn = document.getElementById('sheetConfirmBtn');
+const sheetCancelBtn = document.getElementById('sheetCancelBtn');
+const sheetAltLink = document.getElementById('sheetAltLink');
+const otpRow = document.getElementById('otpRow');
+let pendingApvItem = null;
+let scanTimer = null;
+
+function resetSheet(){
+  sheetScan.classList.add('scanning');
+  sheetScan.classList.remove('success');
+  scanIcon.innerHTML = `<path d="M12 3a4 4 0 00-4 4v1M12 3a4 4 0 014 4v1M4 11v2a8 8 0 0016 0v-2M12 8v6M9 21c1 .3 2 .5 3 .5s2-.2 3-.5M7.5 18.5c.3-3 .3-6 0-9" stroke="var(--gold-600)" stroke-width="1.7" stroke-linecap="round"/>`;
+  sheetStatus.textContent = 'Đang xác thực Face ID...';
+  sheetStatus.classList.remove('ok');
+  sheetConfirmBtn.disabled = true;
+  sheetConfirmBtn.classList.remove('ready');
+  otpRow.style.display = 'none';
+  otpRow.querySelectorAll('.otp-box').forEach(b => { b.textContent=''; b.classList.remove('filled'); });
+  sheetAltLink.textContent = 'Dùng mã Soft OTP thay thế';
+  sheetAltLink.style.display = 'inline-block';
+}
+
+function runBiometricScan(){
+  clearTimeout(scanTimer);
+  scanTimer = setTimeout(() => {
+    sheetScan.classList.remove('scanning');
+    sheetScan.classList.add('success');
+    scanIcon.innerHTML = `<path d="M5 13l4 4L19 7" stroke="var(--green-600)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+    sheetStatus.textContent = 'Xác thực thành công';
+    sheetStatus.classList.add('ok');
+    sheetConfirmBtn.disabled = false;
+    sheetConfirmBtn.classList.add('ready');
+  }, 1500);
+}
+
+function runOtpFill(){
+  const boxes = otpRow.querySelectorAll('.otp-box');
+  const demoCode = ['4','8','1','2','0','5'];
+  boxes.forEach((b,i) => {
+    setTimeout(() => {
+      b.textContent = demoCode[i];
+      b.classList.add('filled');
+      if(i === boxes.length-1){
+        sheetStatus.textContent = 'Mã OTP hợp lệ';
+        sheetStatus.classList.add('ok');
+        sheetConfirmBtn.disabled = false;
+        sheetConfirmBtn.classList.add('ready');
+      }
+    }, 220*(i+1));
+  });
+}
+
+sheetAltLink.addEventListener('click', () => {
+  clearTimeout(scanTimer);
+  sheetScan.style.display = 'none';
+  otpRow.style.display = 'flex';
+  sheetStatus.textContent = 'Đang gửi mã Soft OTP...';
+  sheetStatus.classList.remove('ok');
+  sheetConfirmBtn.disabled = true;
+  sheetConfirmBtn.classList.remove('ready');
+  sheetAltLink.style.display = 'none';
+  setTimeout(runOtpFill, 300);
+});
+
+function openApprovalSheet(item){
+  pendingApvItem = item;
+  sheetScan.style.display = 'flex';
+  resetSheet();
+  sheetTarget.textContent = item.dataset.name;
+  sheetAmount.textContent = item.dataset.amount;
+  sheetOverlay.classList.add('open');
+  runBiometricScan();
+}
+
+function closeApprovalSheet(){
+  sheetOverlay.classList.remove('open');
+  clearTimeout(scanTimer);
+  pendingApvItem = null;
+}
+
+sheetCancelBtn.addEventListener('click', closeApprovalSheet);
+
+sheetConfirmBtn.addEventListener('click', () => {
+  if(sheetConfirmBtn.disabled || !pendingApvItem) return;
+  const item = pendingApvItem;
+  const actions = item.querySelector('.apv-actions');
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const result = document.createElement('div');
+  result.className = 'apv-result done';
+  result.innerHTML = `✅ Đã duyệt lúc ${hh}:${mm} · Xác thực sinh trắc học`;
+  actions.replaceWith(result);
+  closeApprovalSheet();
+  showToast('toastKhdn', `Đã duyệt giao dịch <b>${item.dataset.name}</b> (${item.dataset.amount}) sau khi xác thực thành công.`);
+});
+
+/* ============================================================
+   DRILL-DOWN CARDS — nội dung hiển thị khi bấm các CTA trong thẻ dữ liệu
+   ============================================================ */
+function buildStatementCard(){
+  return `
+    <div class="data-card card-enter">
+      <div class="data-card-head">
+        <span class="label">Sao kê giao dịch · TK •••• 4821</span>
+        <span class="head-badge">7 ngày gần nhất</span>
+      </div>
+      <div class="data-card-body">
+        <div class="acct-row">
+          <div><div class="acct-name">Thu tiền bán hàng — Cty ABC Logistics</div><div class="acct-no">29/08 · 14:32 · GD1234567</div></div>
+          <div class="acct-amount" style="color:var(--green-600)">+185.000.000 đ</div>
+        </div>
+        <div class="acct-row">
+          <div><div class="acct-name">Thanh toán NCC — Cty Kim Long</div><div class="acct-no">28/08 · 09:15 · GD1234512</div></div>
+          <div class="acct-amount" style="color:var(--red-500)">−120.000.000 đ</div>
+        </div>
+        <div class="acct-row">
+          <div><div class="acct-name">Trả lương nhân viên đợt 2</div><div class="acct-no">27/08 · 16:48 · GD1234498</div></div>
+          <div class="acct-amount" style="color:var(--red-500)">−340.000.000 đ</div>
+        </div>
+        <div class="acct-row">
+          <div><div class="acct-name">Thu tiền XNK — Cty Đông Phương</div><div class="acct-no">26/08 · 11:02 · GD1234455</div></div>
+          <div class="acct-amount" style="color:var(--green-600)">+512.000.000 đ</div>
+        </div>
+        <div class="acct-total">
+          <div class="lbl">Số dư cuối kỳ (29/08)</div>
+          <div class="val">2.847,5 tr</div>
+        </div>
+      </div>
+      <div class="card-cta" data-action="export-statement">⬇ Tải file PDF sao kê →</div>
+    </div>`;
+}
+
+function buildForecastModelCard(){
+  return `
+    <div class="data-card card-enter">
+      <div class="data-card-head">
+        <span class="label">Chi tiết mô hình dự báo dòng tiền</span>
+        <span class="head-badge">AI Time-series · Độ tin cậy 87%</span>
+      </div>
+      <div class="data-card-body">
+        <div class="rcm-insight">🧠 Mô hình học từ 18 tháng lịch sử giao dịch, kết hợp chu kỳ thu–chi theo hợp đồng và yếu tố mùa vụ để dự báo dòng tiền ròng 6 tuần tới.</div>
+        <div class="apv-item">
+          <div class="apv-top"><div><div class="apv-title">Tuần 1–2</div><div class="apv-sub">Thu XNK theo hợp đồng + doanh thu bán hàng ổn định</div></div>
+          <div class="apv-amount" style="color:var(--green-600)">+620 tr</div></div>
+        </div>
+        <div class="apv-item">
+          <div class="apv-top"><div><div class="apv-title">Tuần 3</div><div class="apv-sub">Kỳ thanh toán nhà cung cấp định kỳ</div></div>
+          <div class="apv-amount" style="color:var(--red-500)">−310 tr</div></div>
+        </div>
+        <div class="apv-item">
+          <div class="apv-top"><div><div class="apv-title">Tuần 4 ⚠️</div><div class="apv-sub">Trùng kỳ trả lương + hạn thanh toán NCC Kim Long</div></div>
+          <div class="apv-amount" style="color:var(--red-500)">−450 tr</div></div>
+        </div>
+        <div class="apv-item">
+          <div class="apv-top"><div><div class="apv-title">Tuần 5–6</div><div class="apv-sub">Thu hồi công nợ + đơn hàng mới dự kiến</div></div>
+          <div class="apv-amount" style="color:var(--green-600)">+540 tr</div></div>
+        </div>
+        <div class="fc-note">📌 Khuyến nghị: chuẩn bị hạn mức thấu chi hoặc đàm phán giãn kỳ thanh toán NCC Kim Long trước tuần 4 để tránh thiếu hụt thanh khoản tạm thời.</div>
+      </div>
+      <div class="card-cta" data-action="enable-alert">🔔 Bật cảnh báo khi dòng tiền dự kiến âm</div>
+    </div>`;
+}
+
+function buildSourceDocCard(){
+  return `
+    <div class="data-card card-enter">
+      <div class="data-card-head">
+        <span class="label">Văn bản gốc</span>
+        <span class="head-badge">Đang hiệu lực</span>
+      </div>
+      <div class="data-card-body">
+        <div class="rcm-name">Biểu phí dịch vụ KHDN &amp; Quy chế phê duyệt giao dịch điện tử</div>
+        <div class="acct-no" style="margin:4px 0 10px;">Quyết định 118/2025/QĐ-HĐQT · Ban hành 20/06/2025 · Hiệu lực từ 01/07/2025</div>
+        <div class="rag-item">
+          <div class="rag-q">Điều 4.2 — Hạn mức chuyển tiền theo gói dịch vụ</div>
+          <div class="rag-a" style="font-weight:500;font-size:11.5px;color:var(--text-600);line-height:1.5;">"Khách hàng gói SME Plus được cấp hạn mức chuyển tiền tối đa 500.000.000 đồng/ngày, không quá 20 giao dịch/ngày, áp dụng cho cả kênh Mobile App và Internet Banking."</div>
+        </div>
+        <div class="rag-item">
+          <div class="rag-q">Điều 6.1 — Thẩm quyền phê duyệt trên kênh điện tử</div>
+          <div class="rag-a" style="font-weight:500;font-size:11.5px;color:var(--text-600);line-height:1.5;">"Người duyệt cấp 1 được phê duyệt giao dịch có giá trị đến 2.000.000.000 đồng/giao dịch sau khi hoàn tất xác thực sinh trắc học hoặc Soft OTP."</div>
+        </div>
+        <div class="rag-source">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span>Bản gốc PDF · 14 trang · Phòng Pháp chế &amp; Tuân thủ phát hành</span>
+        </div>
+      </div>
+      <div class="card-cta" data-action="download-doc">⬇ Tải văn bản PDF →</div>
+    </div>`;
+}
+
+function buildProfileCard(){
+  const row = (k,v) => `
+    <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--border);font-size:12px;">
+      <span style="color:var(--text-600);">${k}</span><span style="font-weight:600;color:var(--text-900);text-align:right;">${v}</span>
+    </div>`;
+  return `
+    <div class="data-card card-enter">
+      <div class="data-card-head">
+        <span class="label">Hồ sơ đề xuất · Thấu chi online SME</span>
+        <span class="head-badge">Đã khởi tạo</span>
+      </div>
+      <div class="data-card-body">
+        ${row('Doanh nghiệp','Công ty TNHH Phú Thành')}
+        ${row('Mã số thuế','0102 456 789')}
+        ${row('Hạn mức đề xuất','2.000.000.000 đ')}
+        ${row('Người phụ trách','Lan Anh — CV KH Ưu tiên')}
+        <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:12px;">
+          <span style="color:var(--text-600);">Trạng thái</span><span style="font-weight:700;color:var(--gold-600);">Chờ RM xác nhận</span>
+        </div>
+        <div class="task-row"><div class="task-dot" style="background:var(--green-600);"></div><div class="task-name">Trích xuất dữ liệu dòng tiền 12 tháng</div><div class="task-time">✓ Xong</div></div>
+        <div class="task-row"><div class="task-dot"></div><div class="task-name">RM rà soát &amp; xác nhận điều kiện</div><div class="task-time">Đang xử lý</div></div>
+        <div class="task-row"><div class="task-dot" style="background:var(--text-400);"></div><div class="task-name">Gửi hợp đồng điện tử ký số</div><div class="task-time">Chưa tới lượt</div></div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   CHAT CLICK DISPATCHER — approve/reject + CTA drill-down
+   ============================================================ */
+const triggeredCtas = new WeakSet();
+
+function appendCtaFollowup(userText, html){
+  appendUserBubble(userText);
+  appendAssistantResponse(() => html);
+}
+
+function runCallRmSequence(cta){
+  if(cta.dataset.calling) return;
+  cta.dataset.calling = '1';
+  const badge = document.getElementById('humanStatusBadge');
+  cta.textContent = '📞 Đang gọi Lan Anh...';
+  if(badge){
+    badge.textContent = 'Đang gọi...';
+    badge.style.background = 'var(--gold-100)';
+    badge.style.color = 'var(--gold-600)';
+  }
+  showToast('toastKhdn', `Đang kết nối cuộc gọi tới <b>Lan Anh — CV KH Ưu tiên</b>...`);
+  setTimeout(() => {
+    cta.textContent = '✓ Cuộc gọi đã kết nối';
+    if(badge){
+      badge.textContent = 'Đã kết nối';
+      badge.style.background = 'var(--green-100)';
+      badge.style.color = 'var(--green-600)';
+    }
+    showToast('toastKhdn', `Đã kết nối cuộc gọi với chị Lan Anh.`);
+  }, 1600);
+}
+
+function handleCardCta(action, cta){
+  switch(action){
+    case 'view-statement':
+      appendCtaFollowup('Xem chi tiết sao kê', buildStatementCard());
+      break;
+    case 'export-statement':
+      showToast('toastKhdn', `Đã gửi file sao kê PDF vào email đăng ký của công ty.`);
+      break;
+    case 'view-forecast-model':
+      appendCtaFollowup('Xem chi tiết mô hình dự báo', buildForecastModelCard());
+      break;
+    case 'enable-alert':
+      showToast('toastKhdn', `Đã bật cảnh báo — hệ thống sẽ nhắn tin/nhắn Zalo khi dòng tiền dự kiến âm.`);
+      break;
+    case 'view-source-doc':
+      appendCtaFollowup('Xem văn bản gốc', buildSourceDocCard());
+      break;
+    case 'download-doc':
+      showToast('toastKhdn', `Đã gửi văn bản PDF vào email đăng ký của công ty.`);
+      break;
+    case 'init-profile':
+      showToast('toastKhdn', `Đã khởi tạo hồ sơ nhanh gói <b>Thấu chi online SME</b>. RM Lan Anh sẽ liên hệ trong 24h để hoàn tất.`);
+      appendCtaFollowup('Khởi tạo hồ sơ nhanh gói Thấu chi online SME', buildProfileCard());
+      break;
+    case 'call-rm':
+      runCallRmSequence(cta);
+      return; // không khoá nút — cho phép cập nhật trạng thái tại chỗ
+  }
+}
+
+chat.addEventListener('click', (e) => {
+  const approveBtn = e.target.closest('.btn-approve');
+  const rejectBtn = e.target.closest('.btn-reject');
+  const cta = e.target.closest('.card-cta[data-action]');
+
+  if(approveBtn){
+    const item = approveBtn.closest('.apv-item');
+    openApprovalSheet(item);
+    return;
+  }
+  if(rejectBtn){
+    const item = rejectBtn.closest('.apv-item');
+    const actions = item.querySelector('.apv-actions');
+    const result = document.createElement('div');
+    result.className = 'apv-result rejected';
+    result.innerHTML = `✕ Đã từ chối giao dịch`;
+    actions.replaceWith(result);
+    return;
+  }
+  if(cta){
+    if(cta.dataset.action !== 'call-rm'){
+      if(triggeredCtas.has(cta)) return;
+      triggeredCtas.add(cta);
+      cta.style.opacity = '.55';
+      cta.style.pointerEvents = 'none';
+    }
+    handleCardCta(cta.dataset.action, cta);
+  }
+});
+
+/* ============================================================
+   TOAST helper
+   ============================================================ */
+let toastTimers = {};
+function showToast(id, html){
+  const el = document.getElementById(id);
+  el.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M5 13l4 4L19 7" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${html}</span>`;
+  el.classList.add('show');
+  clearTimeout(toastTimers[id]);
+  toastTimers[id] = setTimeout(() => el.classList.remove('show'), 3600);
+}
+
+/* ============================================================
+   RM WORKSPACE — accept & send AI script
+   ============================================================ */
+const scriptSendBtn = document.getElementById('scriptSendBtn');
+scriptSendBtn.addEventListener('click', () => {
+  if(scriptSendBtn.classList.contains('sent')) return;
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  scriptSendBtn.textContent = `Đã gửi lúc ${hh}:${mm} ✓`;
+  scriptSendBtn.classList.add('sent');
+  showToast('toastRm', `Đã gửi kịch bản tư vấn <b>Thấu chi online SME</b> tới ứng dụng KHDN của khách hàng.`);
+});
+
+/* ================================================================
+   [VOICE ADD-ON] GIAO TIẾP SONG SONG: GIỌNG NÓI (VOICE) + VĂN BẢN
+   ----------------------------------------------------------------
+   Toàn bộ khối này là PHẦN THÊM MỚI. Không sửa đổi logic sẵn có:
+   - Input thoại sau khi STT xong sẽ đi vào ĐÚNG hàm handleTextSend()
+     hiện hữu  ->  cùng detectIntent(), cùng responses{}, cùng ngữ cảnh.
+   - Output: bong bóng chat giữ nguyên + thêm lớp TTS đọc tiếng Việt.
+   Luồng 4 bước: Voice Capture -> STT -> NLU/RAG (có sẵn) -> Text + TTS
+   ================================================================ */
+(function(){
+  'use strict';
+
+  var micBtn        = document.getElementById('micBtn');
+  var ttsToggle     = document.getElementById('ttsToggle');
+  var voicePanel    = document.getElementById('voicePanel');
+  var voiceScrim    = document.getElementById('voiceScrim');
+  var voiceWave     = document.getElementById('voiceWave');
+  var voiceStatus   = document.getElementById('voiceStatus');
+  var voiceHint     = document.getElementById('voiceHint');
+  var voiceTs       = document.getElementById('voiceTranscript');
+  var voiceStop     = document.getElementById('voiceStop');
+  var voiceCancel   = document.getElementById('voiceCancel');
+  var voiceKbd      = document.getElementById('voiceKbd');
+  var chatEl        = document.getElementById('chat');
+  var inputEl       = document.getElementById('textInput');
+  var rmAvatarEl    = document.querySelector('#khdnBackBtn') ? document.querySelector('.rm-avatar') : null;
+
+  if(!micBtn || !voicePanel || !chatEl || !inputEl) return;
+
+  var V = {
+    ttsOn: true,          // Bật/tắt phản hồi bằng giọng nói
+    autoSend: true,       // Im lặng 1,2s -> tự gửi
+    listening: false,
+    recog: null,
+    finalText: '',
+    interimText: '',
+    silenceTimer: null,
+    simTimer: null,
+    audioCtx: null, analyser: null, micStream: null, rafId: null,
+    lastInputWasVoice: false,
+    currentBtn: null
+  };
+
+  /* ---------- Tạo 26 thanh sóng âm ---------- */
+  for(var i=0;i<26;i++){ voiceWave.appendChild(document.createElement('span')); }
+  var bars = voiceWave.querySelectorAll('span');
+
+  /* ================================================================
+     A. TEXT-TO-SPEECH — phát âm TIẾNG VIỆT (vi-VN)
+     ================================================================ */
+  function numToVi(n){
+    if(!isFinite(n)) return String(n);
+    var out = [], ty, tr, ng;
+    ty = Math.floor(n/1e9); n = n % 1e9;
+    tr = Math.floor(n/1e6); n = n % 1e6;
+    ng = Math.floor(n/1e3); n = n % 1e3;
+    if(ty) out.push(ty + ' tỷ');
+    if(tr) out.push(tr + ' triệu');
+    if(ng) out.push(ng + ' nghìn');
+    if(n)  out.push(String(n));
+    return out.length ? out.join(' ') : 'không';
+  }
+
+  /* Chuẩn hoá văn bản để TTS đọc tự nhiên bằng tiếng Việt */
+  function normalizeVi(txt){
+    return txt
+      /* bỏ emoji + ký hiệu trang trí */
+      .replace(/[\u{1F000}-\u{1FAFF}\u{2190}-\u{27BF}\u{FE0F}\u{2B00}-\u{2BFF}]/gu, ' ')
+      /* 450.000.000 đ -> bốn trăm năm mươi triệu đồng (dạng số + đơn vị) */
+      .replace(/(\d{1,3}(?:\.\d{3})+)\s*(đ|vnđ|vnd)?/gi, function(m, num, unit){
+        return numToVi(parseInt(num.replace(/\./g,''),10)) + (unit ? ' đồng' : '');
+      })
+      .replace(/\bT\+(\d)/gi, 'T cộng $1')
+      .replace(/\bKHDN\b/g, 'khách hàng doanh nghiệp')
+      .replace(/\bRM\b/g, 'quản lý khách hàng')
+      .replace(/\bOTP\b/g, 'ô tê pê')
+      .replace(/\bAI\b/g, 'ây ai')
+      .replace(/%/g, ' phần trăm')
+      .replace(/\|/g, '. ')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\n+/g, '. ')
+      .trim();
+  }
+
+  /* ------------------------------------------------------------------
+     LÕI PHÁT ÂM TIẾNG VIỆT — 2 tầng, tự chọn tầng khả dụng
+       Tầng 1: giọng vi-VN cài sẵn trong máy (Web Speech API) — tốt nhất
+       Tầng 2: giọng đọc trực tuyến tiếng Việt — dùng khi máy CHƯA có
+               giọng Việt (nếu không có tầng này, Windows sẽ đọc chữ Việt
+               bằng giọng tiếng Anh, nghe không hiểu được)
+     ------------------------------------------------------------------ */
+  var TTS = { engine:'online', online:'hoaimy', gender:'female', voice:null, audio:null, queue:[], stopped:true, rate:1.0 };
+
+  function allVoices(){
+    try{ return window.speechSynthesis ? (window.speechSynthesis.getVoices() || []) : []; }
+    catch(e){ return []; }
+  }
+  function isVietVoice(v){
+    var lang = (v.lang || '').toLowerCase().replace('_','-');
+    var name = (v.name || '').toLowerCase();
+    return lang.indexOf('vi') === 0 ||
+           name.indexOf('vietnam') >= 0 || name.indexOf('viet nam') >= 0 ||
+           name.indexOf('hoaimy') >= 0 || name.indexOf('hoai my') >= 0 ||
+           name.indexOf('namminh') >= 0 || name.indexOf('nam minh') >= 0 ||
+           name.indexOf('linh') >= 0;
+  }
+  function vietVoices(){ return allVoices().filter(isVietVoice); }
+
+  /* Đoán giới tính giọng máy (local) theo tên, để không lỡ đổi giọng nam
+     thành giọng nữ (hoặc ngược lại) khi phải dự phòng sang giọng máy. */
+  function guessLocalGender(v){
+    var n = (v.name || '').toLowerCase();
+    if(n.indexOf('nam') >= 0 || n.indexOf('an ') >= 0 || n.indexOf('(an)') >= 0) return 'male';
+    if(n.indexOf('hoaimy') >= 0 || n.indexOf('hoai my') >= 0 || n.indexOf('linh') >= 0) return 'female';
+    return 'unknown';
+  }
+  function localVoicesByGender(gender){
+    var vi = vietVoices();
+    var match = vi.filter(function(v){ return guessLocalGender(v) === gender; });
+    return match.length ? match : vi;   /* không có đúng giới tính -> trả về tất cả */
+  }
+
+  /* ---- Danh sách giọng trong thanh cài đặt ---- */
+  var voiceBar    = document.getElementById('voiceBar');
+  var voiceSelect = document.getElementById('voiceSelect');
+  var voiceNote   = document.getElementById('voiceNote');
+  var voiceTestBtn= document.getElementById('voiceTest');
+  var voiceCfgBtn = document.getElementById('voiceCfgBtn');
+
+  function buildVoiceList(){
+    if(!voiceSelect) return;
+    var vi = vietVoices();
+    var cur = voiceSelect.value;
+    voiceSelect.innerHTML = '';
+
+    [['__online_hoaimy__','Nữ miền Bắc — Hoài My (trực tuyến, khuyên dùng)'],
+     ['__online_namminh__','Nam miền Bắc — Nam Minh (trực tuyến)'],
+     ['__online_google__','Giọng Google tiếng Việt (dự phòng)']].forEach(function(o){
+      var op = document.createElement('option');
+      op.value = o[0]; op.textContent = o[1];
+      voiceSelect.appendChild(op);
+    });
+
+    vi.forEach(function(v){
+      var o = document.createElement('option');
+      var g = guessLocalGender(v);
+      var gLabel = g === 'male' ? 'Nam' : (g === 'female' ? 'Nữ' : 'Chưa rõ');
+      o.value = 'local:' + v.name;
+      o.textContent = 'Máy (' + gLabel + '): ' + v.name + ' — ' + v.lang;
+      voiceSelect.appendChild(o);
+    });
+
+    /* Ưu tiên giọng Việt cài sẵn trong máy nếu có */
+    if(cur){ voiceSelect.value = cur; }
+    if(!voiceSelect.value){ voiceSelect.value = '__online_hoaimy__'; }
+
+    if(!voiceNote.dataset.override){
+      if(vi.length){
+        voiceNote.innerHTML = 'Mặc định dùng <b>giọng đọc tiếng Việt trực tuyến</b> cho phát âm tự nhiên nhất. Máy anh cũng đã có <b>' + vi.length + ' giọng Việt offline</b> — chọn dòng “Máy: …” nếu muốn đọc không cần mạng.';
+      } else {
+        voiceNote.innerHTML = 'Đang dùng <b>giọng đọc tiếng Việt trực tuyến</b> (cần Internet) vì máy chưa cài giọng Việt offline. Muốn đọc offline: Windows → <b>Cài đặt → Thời gian &amp; Ngôn ngữ → Giọng nói</b> → thêm giọng <b>Tiếng Việt (HoaiMy / NamMinh)</b> rồi khởi động lại trình duyệt.';
+      }
+    }
+    applyVoiceChoice();
+  }
+
+  function applyVoiceChoice(){
+    var val = voiceSelect ? voiceSelect.value : '__online_hoaimy__';
+    voiceNote.dataset.override = '';   /* đổi lựa chọn -> xoá cảnh báo dự phòng cũ */
+    if(val && val.indexOf('local:') === 0){
+      var nm = val.slice(6);
+      TTS.voice = allVoices().filter(function(v){ return v.name === nm; })[0] || null;
+      TTS.engine = TTS.voice ? 'local' : 'online';
+      TTS.gender = TTS.voice ? guessLocalGender(TTS.voice) : 'unknown';
+    } else {
+      TTS.voice  = null;
+      TTS.engine = 'online';
+      TTS.online = val.indexOf('namminh') > 0 ? 'namminh'
+                 : (val.indexOf('google') > 0 ? 'google' : 'hoaimy');
+      TTS.gender = (TTS.online === 'namminh') ? 'male' : 'female';
+    }
+  }
+
+  /* Hiển thị RÕ giọng đang thực sự phát ra — để không bao giờ "âm thầm"
+     đổi giọng mà người dùng không biết. */
+  var VOICE_LABEL = { hoaimy:'Hoài My (Nữ, trực tuyến)', namminh:'Nam Minh (Nam, trực tuyến)', google:'Google Tiếng Việt (trực tuyến)' };
+  function announcePlaying(html){
+    voiceNote.dataset.override = '1';
+    voiceNote.innerHTML = html;
+  }
+
+  if(window.speechSynthesis){
+    window.speechSynthesis.onvoiceschanged = buildVoiceList;
+    setTimeout(buildVoiceList, 60);
+    setTimeout(buildVoiceList, 900);   /* Chrome nạp danh sách giọng trễ */
+  } else {
+    setTimeout(buildVoiceList, 60);
+  }
+  if(voiceSelect) voiceSelect.addEventListener('change', function(){ stopSpeak(); applyVoiceChoice(); });
+  if(voiceCfgBtn) voiceCfgBtn.addEventListener('click', function(){
+    voiceBar.classList.toggle('show');
+    voiceCfgBtn.classList.toggle('on', voiceBar.classList.contains('show'));
+  });
+  if(voiceTestBtn) voiceTestBtn.addEventListener('click', function(){
+    var keep = V.ttsOn; V.ttsOn = true;
+    speak('Em chào anh Quân. Số dư tài khoản thanh toán hiện có 2.847.500.000 đ.', null);
+    V.ttsOn = keep;
+  });
+
+  /* ---- Dừng đọc ---- */
+  function stopSpeak(){
+    TTS.stopped = true;
+    TTS.queue = [];
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    if(TTS.audio){
+      try{ TTS.audio.pause(); TTS.audio.src = ''; }catch(e){}
+      TTS.audio = null;
+    }
+    if(V.currentBtn){ setSpeakBtnState(V.currentBtn, false); V.currentBtn = null; }
+    if(rmAvatarEl) rmAvatarEl.classList.remove('speaking');
+    /* Đọc xong (hoặc bị dừng) -> gỡ cảnh báo tạm thời sau vài giây để anh
+       kịp đọc, tránh mất cảnh báo ngay khi audio vừa dứt. */
+    if(voiceNote && voiceNote.dataset.override){
+      setTimeout(function(){ voiceNote.dataset.override = ''; }, 4000);
+    }
+  }
+
+  /* ---- Cắt câu thành đoạn ngắn để giọng đọc trực tuyến phát mượt ---- */
+  /* Tách câu bằng vòng lặp (không dùng lookbehind -> tương thích Safari cũ),
+     và KHÔNG cắt tại dấu chấm nằm giữa các chữ số (2.847.500.000). */
+  function splitSentences(txt){
+    var out = [], cur = '', i, c, nx;
+    for(i = 0; i < txt.length; i++){
+      c = txt.charAt(i); cur += c;
+      if('.;:!?'.indexOf(c) >= 0){
+        nx = txt.charAt(i + 1);
+        if(nx === '' || !/\d/.test(nx)){ out.push(cur); cur = ''; }
+      }
+    }
+    if(cur.trim()) out.push(cur);
+    return out.length ? out : [txt];
+  }
+
+  function chunkText(txt, max){
+    max = max || 170;
+    var parts = splitSentences(txt);
+    var out = [], buf = '';
+    parts.forEach(function(p){
+      if((buf + ' ' + p).trim().length <= max){ buf = (buf ? buf + ' ' : '') + p; }
+      else {
+        if(buf) out.push(buf.trim());
+        while(p.length > max){
+          var cut = p.lastIndexOf(' ', max);
+          if(cut < 40) cut = max;
+          out.push(p.slice(0, cut).trim());
+          p = p.slice(cut);
+        }
+        buf = p;
+      }
+    });
+    if(buf.trim()) out.push(buf.trim());
+    return out.filter(Boolean);
+  }
+
+  /* ---- Tầng 2: giọng đọc tiếng Việt trực tuyến ----
+     Hai nguồn giọng nữ tiếng Việt, tự chuyển nguồn nếu nguồn đầu lỗi:
+       (a) HoaiMy — giọng neural tiếng Việt, phát âm tự nhiên nhất
+       (b) Google — giọng dự phòng
+     Ở bản production, thay bằng TTS tiếng Việt của ngân hàng / GreenNode. */
+  /* Nguon TRUC TIEP (trinh duyet goi thang ra Internet). Cach nay hay bi chan:
+     CORS, kiem tra Referer cua Google, AdBlock, hoac chinh sach mang cong ty. */
+  var DIRECT_SRC = {
+    hoaimy: function(t){
+      return 'https://api.streamelements.com/kappa/v2/speech?voice=vi-VN-HoaiMyNeural&text='
+             + encodeURIComponent(t);
+    },
+    namminh: function(t){
+      return 'https://api.streamelements.com/kappa/v2/speech?voice=vi-VN-NamMinhNeural&text='
+             + encodeURIComponent(t);
+    },
+    google: function(t){
+      return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&ttsspeed=1&q='
+             + encodeURIComponent(t);
+    }
+  };
+
+  /* Nguon QUA PROXY cung origin (/tts). Server tai file MP3 giup roi tra ve,
+     nen trinh duyet chi thay mot file nhac binh thuong -> khong the bi chan
+     boi CORS/Referer. Day la duong di CHINH, dung ca khi chay local
+     (START_VRM.bat -> vrm_server.py) lan khi deploy Netlify (netlify function). */
+  function proxySrc(key, t){
+    return '/tts?voice=' + encodeURIComponent(key) + '&text=' + encodeURIComponent(t);
+  }
+
+  /* TTS.proxy: null = chua do xong, true = co proxy, false = khong co. */
+  var ONLINE_SRC = {
+    hoaimy:  function(t){ return TTS.proxy ? proxySrc('hoaimy', t)  : DIRECT_SRC.hoaimy(t); },
+    namminh: function(t){ return TTS.proxy ? proxySrc('namminh', t) : DIRECT_SRC.namminh(t); },
+    google:  function(t){ return TTS.proxy ? proxySrc('google', t)  : DIRECT_SRC.google(t); }
+  };
+
+  /* Do xem server dang phuc vu trang nay co endpoint /tts hay khong.
+     Chay 1 lan luc tai trang, khong chan giao dien. */
+  (function probeProxy(){
+    if(location.protocol === 'file:'){ TTS.proxy = false; return; }
+    try{
+      fetch('/tts?probe=1', { cache:'no-store' })
+        .then(function(r){ TTS.proxy = (r.ok === true); })
+        .catch(function(){ TTS.proxy = false; });
+    }catch(e){ TTS.proxy = false; }
+  })();
+
+  /* QUY TẮC BẮT BUỘC: không bao giờ tự ý đổi giới tính giọng đọc mà không
+     báo cho người dùng biết. Nếu giọng đã chọn (vd: Nam Minh) không phát
+     được, hệ thống chỉ được:
+       1) thử lại chính nguồn đó (phòng lỗi mạng thoáng qua),
+       2) rồi tìm giọng MÁY cùng giới tính,
+       3) nếu vẫn không có, mới tạm dùng giọng khác giới và PHẢI hiển thị
+          rõ cảnh báo — không được đọc "im lặng" bằng giọng khác. */
+  function openVoiceBar(){
+    if(voiceBar && !voiceBar.classList.contains('show')){
+      voiceBar.classList.add('show');
+      if(voiceCfgBtn) voiceCfgBtn.classList.add('on');
+    }
+  }
+
+  function playPiece(piece, key, triesLeft, forceDirect){
+    if(TTS.stopped) return;
+    var url = forceDirect ? DIRECT_SRC[key](piece) : ONLINE_SRC[key](piece);
+    var a = new Audio(url);
+    a.playbackRate = TTS.rate;
+    TTS.audio = a;
+    var moved = false;
+    function retryOrFallback(){
+      if(moved) return; moved = true;
+      if(triesLeft > 0){ playPiece(piece, key, triesLeft - 1, forceDirect); return; }
+      /* Proxy khong ra tieng -> thu not duong truc tiep (co may van goi duoc
+         thang ra Internet) truoc khi chuyen sang giong may. */
+      if(!forceDirect && TTS.proxy){ playPiece(piece, key, 0, true); return; }
+      fallbackSameGender(piece, key);
+    }
+    a.onended = function(){ if(!moved){ moved = true; playQueue(); } };
+    a.onerror = retryOrFallback;
+    var pr = a.play();
+    if(pr && pr.catch) pr.catch(retryOrFallback);
+  }
+
+  function playQueue(){
+    if(TTS.stopped) return;
+    if(!TTS.queue.length){ stopSpeak(); return; }
+    var piece = TTS.queue.shift();
+    announcePlaying('🔊 Đang đọc bằng giọng <b>' + (VOICE_LABEL[TTS.online] || TTS.online) + '</b>.');
+    playPiece(piece, TTS.online, 1);
+  }
+
+  /* Nguồn trực tuyến đã chọn không phát được sau khi thử lại:
+     tìm giọng MÁY cùng giới tính trước, không có mới đành đổi giới tính
+     nhưng luôn thông báo rõ ràng. */
+  function fallbackSameGender(piece, failedKey){
+    var wantGender = (failedKey === 'namminh') ? 'male' : 'female';
+    var sameGenderLocal = vietVoices().filter(function(v){ return guessLocalGender(v) === wantGender; });
+
+    if(sameGenderLocal.length){
+      TTS.voice = sameGenderLocal[0];
+      announcePlaying('⚠️ Giọng <b>' + (VOICE_LABEL[failedKey] || failedKey) + '</b> trực tuyến không phản hồi — tạm đọc bằng giọng máy <b>' + TTS.voice.name + '</b> (cùng giới tính).');
+      speakLocal(piece);
+      return;
+    }
+    if(failedKey !== 'hoaimy'){
+      /* Không tìm được giọng cùng giới tính -> mới đổi sang nguồn khác giới,
+         NHƯNG báo rõ để người dùng không hiểu nhầm là hệ thống lỗi. */
+      openVoiceBar();
+      announcePlaying('⚠️ Giọng <b>' + (VOICE_LABEL[failedKey] || failedKey) + '</b> trực tuyến hiện không phản hồi và máy không có giọng nam thay thế. Đang tạm đọc bằng <b>Hoài My (Nữ)</b> — anh có thể bấm "Nghe thử" lại sau, hoặc kiểm tra kết nối mạng.');
+      playPiece(piece, 'hoaimy', 0);
+      return;
+    }
+    fallbackLocalAny(piece);
+  }
+
+  /* Không còn nguồn trực tuyến nào phát được -> thử toàn bộ giọng máy,
+     hết cách mới báo lỗi và mở thanh cài đặt để người dùng tự xử lý. */
+  function fallbackLocalAny(piece){
+    var vi = vietVoices();
+    if(vi.length){
+      TTS.voice = vi[0];
+      announcePlaying('⚠️ Giọng trực tuyến hiện không phản hồi — tạm đọc bằng giọng máy <b>' + TTS.voice.name + '</b>.');
+      speakLocal(piece);
+    } else {
+      stopSpeak();
+      openVoiceBar();
+      var how;
+      if(location.protocol === 'file:'){
+        how = 'Anh đang mở bằng <b>file://</b> nên trình duyệt chặn hết nguồn giọng bên ngoài. Hãy đóng tab này và <b>nhấp đúp START_VRM.bat</b> để chạy qua <code>http://localhost</code>.';
+      } else if(TTS.proxy === false){
+        how = 'Trang đang chạy nhưng <b>chưa có bộ chuyển tiếp giọng đọc</b> (<code>/tts</code>). Nếu chạy ở máy: hãy khởi động bằng <b>START_VRM.bat</b> (cần Python). Nếu đã deploy: kiểm tra <code>netlify/functions/tts.js</code> đã lên chưa.';
+      } else {
+        how = 'Bộ chuyển tiếp <code>/tts</code> có chạy nhưng không tải được giọng — thường do <b>mất mạng</b> hoặc mạng công ty chặn. Anh thử lại sau ít phút.';
+      }
+      announcePlaying('⚠️ <b>Chưa phát được giọng tiếng Việt.</b> ' + how +
+        ' <br>Cách chắc chắn nhất (đọc được kể cả khi mất mạng): cài giọng Việt cho Windows — <b>Cài đặt → Thời gian &amp; Ngôn ngữ → Giọng nói → Thêm giọng → Tiếng Việt</b>, rồi mở lại trình duyệt.');
+    }
+  }
+
+  /* ---- Tầng 1: giọng vi-VN cài sẵn trong máy ---- */
+  function speakLocal(txt){
+    if(!('speechSynthesis' in window)){ stopSpeak(); return; }
+    var u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'vi-VN';
+    u.rate = TTS.rate; u.pitch = 1.0;
+    if(TTS.voice) u.voice = TTS.voice;
+    u.onend  = function(){ if(!TTS.queue.length) stopSpeak(); else speakLocal(TTS.queue.shift()); };
+    u.onerror = function(){ stopSpeak(); };
+    try{ window.speechSynthesis.speak(u); }catch(e){ stopSpeak(); }
+  }
+
+  /* ---- Hàm phát chính ---- */
+  function speak(text, btn){
+    if(!V.ttsOn || !text) return;
+    stopSpeak();
+    TTS.stopped = false;
+
+    var clean = normalizeVi(text);
+    if(clean.length > 520){
+      clean = clean.slice(0, 520);
+      clean = clean.slice(0, Math.max(clean.lastIndexOf('.'), clean.lastIndexOf(','), 400) + 1);
+    }
+    if(!clean) { stopSpeak(); return; }
+
+    if(btn){ setSpeakBtnState(btn, true); V.currentBtn = btn; }
+    if(rmAvatarEl) rmAvatarEl.classList.add('speaking');
+
+    applyVoiceChoice();
+    TTS.queue = chunkText(clean, TTS.engine === 'online' ? 170 : 400);
+
+    if(TTS.engine === 'local' && TTS.voice){
+      speakLocal(TTS.queue.shift());
+    } else {
+      playQueue();
+    }
+  }
+
+  var ICON_SPK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H2v6h4l5 4V5z" stroke="#5B6B82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 8.5a5 5 0 010 7" stroke="#5B6B82" stroke-width="2" stroke-linecap="round"/></svg>';
+  function setSpeakBtnState(btn, playing){
+    btn.classList.toggle('playing', playing);
+    btn.innerHTML = playing
+      ? '<span class="eq"><i></i><i></i><i></i></span> Đang đọc — chạm để dừng'
+      : ICON_SPK + ' Nghe câu trả lời';
+  }
+
+  /* Lấy nội dung cần đọc từ khối trả lời của Trợ lý */
+  function extractSpeech(container){
+    var b = container.querySelector('.bubble.assistant');
+    var txt = b ? b.innerText : container.innerText;
+    return (txt || '').replace(/Nghe câu trả lời/g,'').trim();
+  }
+
+  /* Gắn nút Loa + tự động đọc cho mỗi phản hồi mới của Trợ lý */
+  function decorateAssistantRow(row){
+    if(row.dataset.voiceDone) return;
+    if(row.querySelector('.typing')) return;          /* bỏ qua chấm "đang gõ" */
+    row.dataset.voiceDone = '1';
+
+    var holder = row.querySelector('.timestamp');
+    if(!holder) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'speak-btn';
+    setSpeakBtnState(btn, false);
+    holder.parentNode.insertBefore(btn, holder);
+
+    var text = extractSpeech(row);
+    btn.addEventListener('click', function(){
+      if(btn.classList.contains('playing')) stopSpeak();
+      else { var keep = V.ttsOn; V.ttsOn = true; speak(text, btn); V.ttsOn = keep; }
+    });
+
+    /* STATE 4 — tự động phản hồi bằng giọng nói */
+    if(V.ttsOn) setTimeout(function(){ speak(text, btn); }, 160);
+  }
+
+  /* Theo dõi các bong bóng mới xuất hiện (không sửa hàm render cũ) */
+  var mo = new MutationObserver(function(muts){
+    muts.forEach(function(m){
+      Array.prototype.forEach.call(m.addedNodes, function(n){
+        if(n.nodeType !== 1) return;
+        if(n.classList && n.classList.contains('bubble-row') && n.classList.contains('assistant')){
+          setTimeout(function(){ decorateAssistantRow(n); }, 30);
+        }
+        if(n.classList && n.classList.contains('bubble-row') && n.classList.contains('user') && V.lastInputWasVoice){
+          V.lastInputWasVoice = false;
+          var bub = n.querySelector('.bubble.user');
+          if(bub && bub.innerHTML.indexOf('voice-tag') === -1){
+            bub.innerHTML = '<span class="voice-tag">🎤 Nói</span>' + bub.innerHTML;
+          }
+        }
+      });
+    });
+  });
+  mo.observe(chatEl, {childList:true});
+
+  /* ================================================================
+     B. TOGGLE BẬT/TẮT PHẢN HỒI BẰNG GIỌNG NÓI
+     ================================================================ */
+  function paintTts(){
+    ttsToggle.classList.toggle('on', V.ttsOn);
+    var ic = document.getElementById('ttsIcon');
+    ic.innerHTML = V.ttsOn
+      ? '<path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'
+      : '<path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 9l-6 6M16 9l6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>';
+    ic.style.color = V.ttsOn ? '#0E2A47' : '#fff';
+    ttsToggle.title = V.ttsOn ? 'Đang BẬT phản hồi bằng giọng nói' : 'Đang TẮT phản hồi bằng giọng nói';
+  }
+  ttsToggle.addEventListener('click', function(){
+    V.ttsOn = !V.ttsOn;
+    if(!V.ttsOn) stopSpeak();
+    paintTts();
+    if(typeof showToast === 'function'){
+      showToast('toastKhdn', V.ttsOn ? '🔊 Đã bật phản hồi bằng giọng nói' : '🔇 Đã tắt phản hồi bằng giọng nói');
+    }
+  });
+  paintTts();
+
+  /* ================================================================
+     C. SÓNG ÂM (Waveform)
+     ================================================================ */
+  function waveReal(){
+    var data = new Uint8Array(V.analyser.frequencyBinCount);
+    (function loop(){
+      V.analyser.getByteFrequencyData(data);
+      var step = Math.floor(data.length / bars.length) || 1;
+      for(var i=0;i<bars.length;i++){
+        var v = data[i*step] || 0;
+        bars[i].style.height = Math.max(4, (v/255)*44) + 'px';
+      }
+      V.rafId = requestAnimationFrame(loop);
+    })();
+  }
+  function waveFake(){
+    (function loop(){
+      for(var i=0;i<bars.length;i++){
+        var base = Math.sin(Date.now()/165 + i*0.58);
+        bars[i].style.height = (7 + Math.abs(base)*22 + Math.random()*13) + 'px';
+      }
+      V.rafId = requestAnimationFrame(loop);
+    })();
+  }
+  function waveStop(){
+    if(V.rafId) cancelAnimationFrame(V.rafId);
+    V.rafId = null;
+    for(var i=0;i<bars.length;i++) bars[i].style.height = '5px';
+  }
+
+  /* ================================================================
+     D. STATE 2 & 3 — LẮNG NGHE + LIVE TRANSCRIPTION
+     ================================================================ */
+  function renderTranscript(){
+    if(!V.finalText && !V.interimText){
+      voiceTs.innerHTML = '<span class="vt-pending">Đang chờ giọng nói…</span><span class="vt-cursor"></span>';
+    } else {
+      voiceTs.innerHTML = V.finalText + '<span class="vt-pending">' + V.interimText + '</span><span class="vt-cursor"></span>';
+      voiceStatus.textContent = 'Đang nhận dạng giọng nói…';
+      voiceHint.textContent = 'Văn bản đang được điền tự động vào khung chat';
+    }
+    /* Điền thẳng vào ô nhập liệu — dùng chung 1 khung chat với gõ phím */
+    inputEl.value = (V.finalText + V.interimText).trim();
+  }
+
+  function openPanel(){
+    voicePanel.classList.add('open');
+    voiceScrim.classList.add('open');
+    voiceWave.classList.remove('idle');
+  }
+  function closePanel(){
+    voicePanel.classList.remove('open');
+    voiceScrim.classList.remove('open');
+    voiceWave.classList.add('idle');
+    waveStop();
+  }
+
+  var DEMO_LINES = [
+    'Cho anh xem số dư tài khoản công ty',
+    'Có giao dịch nào đang chờ duyệt không',
+    'Xem dự báo dòng tiền tháng tới giúp anh',
+    'Phí chuyển tiền Napas là bao nhiêu',
+    'Đề xuất giải pháp tài chính cho công ty anh'
+  ];
+
+  function simulateSTT(){
+    var sentence = DEMO_LINES[Math.floor(Math.random()*DEMO_LINES.length)];
+    var words = sentence.split(' '), i = 0;
+    clearInterval(V.simTimer);
+    V.simTimer = setInterval(function(){
+      if(!V.listening){ clearInterval(V.simTimer); return; }
+      if(i >= words.length){
+        clearInterval(V.simTimer);
+        V.finalText = sentence; V.interimText = ''; renderTranscript();
+        if(V.autoSend) setTimeout(function(){ if(V.listening) stopListening(true); }, 750);
+        return;
+      }
+      V.interimText = words.slice(0, i+1).join(' ');
+      renderTranscript(); i++;
+    }, 235);
+  }
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  function startListening(){
+    if(V.listening) return;
+    stopSpeak();
+    V.listening = true; V.finalText = ''; V.interimText = '';
+    micBtn.classList.add('listening');
+    voiceStatus.textContent = 'Đang lắng nghe…';
+    voiceHint.textContent = 'Anh cứ nói tự nhiên, ví dụ: “Cho anh xem số dư tài khoản”';
+    voiceStop.textContent = 'Dừng & Gửi';
+    voiceStop.classList.remove('processing');
+    renderTranscript();
+    openPanel();
+
+    /* --- (1) VOICE CAPTURE ---
+       Lưu ý: khi trình duyệt đã hỗ trợ SpeechRecognition, KHÔNG mở thêm
+       getUserMedia để tránh tranh chấp thiết bị micro -> dùng sóng âm mô phỏng. */
+    if(!SR && navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+        V.micStream = stream;
+        V.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var src = V.audioCtx.createMediaStreamSource(stream);
+        V.analyser = V.audioCtx.createAnalyser();
+        V.analyser.fftSize = 128;
+        src.connect(V.analyser);
+        waveReal();
+      }).catch(function(){ waveFake(); });
+    } else { waveFake(); }
+
+    /* --- (2) SPEECH-TO-TEXT: Web Speech API tiếng Việt --- */
+    if(SR){
+      try{
+        V.recog = new SR();
+        V.recog.lang = 'vi-VN';
+        V.recog.interimResults = true;
+        V.recog.continuous = true;
+        V.recog.onresult = function(e){
+          var interim = '';
+          for(var i = e.resultIndex; i < e.results.length; i++){
+            if(e.results[i].isFinal) V.finalText += e.results[i][0].transcript;
+            else interim += e.results[i][0].transcript;
+          }
+          V.interimText = interim;
+          renderTranscript();
+          if(V.autoSend){
+            clearTimeout(V.silenceTimer);
+            V.silenceTimer = setTimeout(function(){ if(V.listening) stopListening(true); }, 1200);
+          }
+        };
+        V.recog.onerror = function(ev){
+          var e = ev && ev.error;
+          if(e === 'no-speech' || e === 'aborted') return;          /* im lặng -> bỏ qua */
+          voiceHint.textContent = 'Không truy cập được micro — đang chạy chế độ mô phỏng';
+          simulateSTT();
+        };
+        V.recog.start();
+      }catch(err){ simulateSTT(); }
+    } else {
+      voiceHint.textContent = 'Trình duyệt chưa hỗ trợ nhận dạng giọng nói — đang chạy chế độ mô phỏng';
+      simulateSTT();
+    }
+  }
+
+  function stopListening(send){
+    if(!V.listening) return;
+    V.listening = false;
+    clearTimeout(V.silenceTimer);
+    clearInterval(V.simTimer);
+    try{ if(V.recog) V.recog.stop(); }catch(e){}
+    try{ if(V.micStream) V.micStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){}
+    try{ if(V.audioCtx) V.audioCtx.close(); }catch(e){}
+    waveStop();
+    micBtn.classList.remove('listening');
+
+    var text = (V.finalText + ' ' + V.interimText).trim();
+
+    if(send && text){
+      voiceStatus.textContent = 'Đang xử lý…';
+      voiceStop.textContent = 'Đang xử lý…';
+      voiceStop.classList.add('processing');
+      setTimeout(function(){
+        closePanel();
+        inputEl.value = text;
+        V.lastInputWasVoice = true;
+        /* --- (3) NLU/RAG: dùng LẠI đúng luồng text sẵn có --- */
+        if(typeof handleTextSend === 'function') handleTextSend();
+        else { document.getElementById('sendBtn').click(); }
+      }, 420);
+    } else {
+      closePanel();
+    }
+  }
+
+  /* ---------- Sự kiện ---------- */
+  micBtn.addEventListener('click', function(){
+    if(V.listening) stopListening(true); else startListening();
+  });
+  voiceStop.addEventListener('click', function(){ stopListening(true); });
+  voiceCancel.addEventListener('click', function(){
+    V.finalText = ''; V.interimText = ''; inputEl.value = '';
+    stopListening(false);
+  });
+  /* Chuyển kênh Voice -> Text: GIỮ NGUYÊN transcript và ngữ cảnh hội thoại */
+  voiceKbd.addEventListener('click', function(){
+    var keep = (V.finalText + ' ' + V.interimText).trim();
+    stopListening(false);
+    inputEl.value = keep;
+    inputEl.focus();
+  });
+  voiceScrim.addEventListener('click', function(){ stopListening(false); });
+
+  /* Dừng đọc khi chuyển sang màn hình RM Workspace */
+  document.querySelectorAll('.view-btn').forEach(function(b){
+    b.addEventListener('click', function(){ stopSpeak(); if(V.listening) stopListening(false); });
+  });
+
+  /* Gắn nút Loa cho lời chào có sẵn khi mở app */
+  var greet = chatEl.querySelector('.bubble-row.assistant');
+  if(greet){
+    var keepTts = V.ttsOn; V.ttsOn = false;   /* không tự đọc lời chào lúc tải trang */
+    decorateAssistantRow(greet);
+    V.ttsOn = keepTts;
+  }
+})();
+
+</script>
+
+</body>
+</html>
