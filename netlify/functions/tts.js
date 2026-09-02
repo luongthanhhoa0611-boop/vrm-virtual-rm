@@ -1,10 +1,23 @@
 /**
  * Netlify Function: bộ CHUYỂN TIẾP (proxy) giọng đọc tiếng Việt.
- * Không cần API key, không tốn phí — chỉ tải hộ file MP3 rồi trả về.
+ * ------------------------------------------------------------------
+ * Bản này KHÔNG cần API key, KHÔNG tốn phí — nó chỉ tải hộ file MP3 từ
+ * nguồn giọng đọc công khai rồi trả về cho trình duyệt.
+ *
+ * Vì sao phải chuyển tiếp thay vì để trình duyệt gọi thẳng?
+ *   Khi trang web gọi thẳng api.streamelements.com / translate.google.com
+ *   bằng thẻ <audio src="...">, request đó thường bị chặn: CORS, Google
+ *   kiểm tra Referer, AdBlock, hoặc firewall mạng công ty. Kết quả là
+ *   <audio> báo lỗi và không ra tiếng.
+ *   Khi đi qua hàm này, trình duyệt chỉ gọi tới CHÍNH domain của mình
+ *   (/tts) và nhận về một file MP3 bình thường — không thể bị chặn.
  *
  * Endpoint (khớp y hệt server local vrm_server.py):
  *   GET /tts?voice=hoaimy|namminh|google&text=...   -> audio/mpeg
  *   GET /tts?probe=1                                -> 200 "ok"
+ *
+ * ⚠️ Đây vẫn là nguồn giọng miễn phí không có SLA, phù hợp demo/hackathon.
+ *    Lên sản phẩm thật cần thay bằng FPT.AI / Zalo AI / Viettel AI.
  */
 
 const UA =
@@ -83,3 +96,5 @@ exports.handler = async function (event) {
     statusCode: 502,
     headers: JSON_HEADERS,
     body: JSON.stringify({ error: 'Không nguồn giọng đọc trực tuyến nào phản hồi.', detail: errors }),
+  };
+};
